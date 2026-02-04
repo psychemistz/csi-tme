@@ -104,6 +104,71 @@ high_expression_targets = [
 
 **Action for later**: Query PolyASite for HMGB1, SPP1, VCAN, C3, IGFBP5 to validate APA biology
 
+---
+
+## CRITICAL: APA vs Splice Isoform Distinction
+
+### What Visium 3' SR Actually Detects
+
+Visium 3' short-read chemistry uses oligo-dT priming, capturing only the 3' end of mRNAs. This fundamentally limits what "isoforms" can be detected:
+
+```
+Gene structure:
+5' ────[Exon1]────[Exon2]────[Exon3]────[3' UTR]──────────── 3'
+                                            ↑         ↑
+                                          pA1       pA2
+                                        (proximal) (distal)
+
+Visium captures: ══════════════════►  (last ~500-1000 bp)
+```
+
+| Detectable | Not Detectable |
+|------------|----------------|
+| APA (3' UTR length) | Internal exon skipping |
+| Terminal exon choice | Alternative 5' TSS |
+| Unique 3' sequences | Intron retention |
+
+### The Zenodo "Isoform" Data
+
+The `iso.quant.h5ad` files contain **3' peak clusters**, not traditional transcript isoforms:
+- Multiple peaks per gene = multiple APA sites
+- Peak positions differ by hundreds to thousands of bp
+- This represents **Alternative PolyAdenylation**, not splice variants
+
+### Implications for Pilot Targets
+
+| Gene | Literature Isoforms | What We Detect | Interpretation |
+|------|---------------------|----------------|----------------|
+| **VCAN** | V0/V1/V2/V3 (GAG domain exons) | APA variation | **Novel APA finding**, not known V0-V3 |
+| **SPP1** | SPP1a/b/c (exon 4/5 skip) | APA variation | **Novel APA finding**, not known a/b/c |
+| **APP** | APP695/751/770 (exon 7/8) | APA variation | **Novel APA finding**, not known 695/751/770 |
+| **CLU** | Nuclear vs secreted (5' TSS) | APA variation | **Novel APA finding**, not known nuclear/secreted |
+| **HMGB1** | Limited documentation | APA variation | Potentially novel |
+| **C3** | Limited splice variants | APA variation | Potentially novel |
+| **CCL2** | APA documented | APA variation | ✅ **Matches known biology** |
+
+### Biological Significance of APA
+
+APA is biologically meaningful, just different from splice isoforms:
+
+| APA Effect | Mechanism | Relevance |
+|------------|-----------|-----------|
+| **mRNA stability** | Short 3' UTR evades miRNA targeting | Higher protein output |
+| **Translation efficiency** | AU-rich elements in long UTRs destabilize | Lower protein output |
+| **mRNA localization** | UTR elements direct subcellular location | Spatial protein distribution |
+| **Immune activation** | Global 3' UTR shortening in T cells | Enhanced effector function |
+
+### Reframed Interpretation
+
+**Original framing**: "Spatial isoform switching of cytokines in TME"
+
+**Accurate framing**: "Spatial APA variation of secreted proteins in TME"
+
+This is still scientifically valid and potentially novel - spatial APA patterns in glioma have not been systematically characterized. However:
+1. Cannot claim findings relate to known functional isoforms (VCAN V0-V3, etc.)
+2. Should cite APA literature, not splice isoform literature
+3. Validation should focus on 3' UTR biology, not protein isoform function
+
 ### Validation Logic
 
 ```
