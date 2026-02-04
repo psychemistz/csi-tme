@@ -261,26 +261,36 @@ def hsic_pvalue(
     n: int,
     method: str = "liu",
     clamp_min: float = 1e-300,
-    clamp_max: float = 1.0
+    clamp_max: float = 1.0,
+    statistic_is_normalized: bool = True
 ) -> PValueResult:
     """Compute p-value for HSIC test statistic.
+
+    This function matches the official SPLISOSM implementation exactly.
 
     Parameters
     ----------
     statistic : float
-        HSIC test statistic (normalized by (n-1)^2 or n^2)
+        HSIC test statistic. If statistic_is_normalized=True (default),
+        this should be the normalized statistic: tr(K @ L) / (n-1)^2.
+        If False, this should be the raw trace: tr(K @ L).
     eigenvalues_x : ndarray
-        Eigenvalues of centered feature kernel
+        Eigenvalues of X^T @ X (not the kernel X @ X^T).
+        For a feature matrix X of shape (n, d), these are eigenvalues
+        of the (d, d) matrix X^T @ X.
     eigenvalues_y : ndarray
-        Eigenvalues of centered spatial kernel
+        Eigenvalues of the centered spatial kernel L.
     n : int
-        Sample size
+        Sample size (number of spots)
     method : str
         Method: "liu" (recommended) or "gamma"
     clamp_min : float
         Minimum p-value
     clamp_max : float
         Maximum p-value
+    statistic_is_normalized : bool
+        If True (default), statistic is normalized by (n-1)^2.
+        If False, statistic is the raw trace.
 
     Returns
     -------
@@ -288,21 +298,52 @@ def hsic_pvalue(
 
     Notes
     -----
-    Eigenvalues are scaled by 1/n internally to match the HSIC normalization.
-    This ensures the null distribution moments align with the test statistic.
+    Follows the official SPLISOSM exactly:
+    - Test statistic for Liu's method: raw_trace * n
+    - Composite eigenvalues: lambda_x * lambda_y (NO scaling by 1/n)
+
+    The eigenvalues should be from X^T @ X (not X @ X^T) for efficiency,
+    as the non-zero eigenvalues are the same.
     """
-    # Scale eigenvalues by 1/n to match HSIC normalization
-    # The HSIC statistic is tr(KHLH)/(n-1)^2, while eigenvalues are
-    # from the unnormalized centered kernels. Scaling aligns the moments.
-    eigenvalues_x_scaled = np.asarray(eigenvalues_x) / n
-    eigenvalues_y_scaled = np.asarray(eigenvalues_y) / n
+    eigenvalues_x = np.asarray(eigenvalues_x)
+    eigenvalues_y = np.asarray(eigenvalues_y)
+
+    # Compute composite eigenvalues: outer product (NO scaling by 1/n)
+    # This matches official SPLISOSM: lambda_spy = lambda_sp * lambda_y
+    composite = compute_composite_eigenvalues(eigenvalues_x, eigenvalues_y)
+
+    # Get raw trace from normalized statistic
+    if statistic_is_normalized:
+        raw_trace = statistic * ((n - 1) ** 2)
+    else:
+        raw_trace = statistic
+
+    # Test statistic for Liu's method: raw_trace * n
+    # This matches official SPLISOSM: liu_sf((hsic_scaled * n_spots).numpy(), ...)
+    scaled_stat = raw_trace * n
 
     if method == "liu":
-        # Compute composite eigenvalues for Liu's method
-        composite = compute_composite_eigenvalues(eigenvalues_x_scaled, eigenvalues_y_scaled)
-        return liu_pvalue(statistic, composite, n, clamp_min, clamp_max)
+        pvalue, df, delta = liu_sf(scaled_stat, composite)
+        pvalue = np.clip(pvalue, clamp_min, clamp_max)
+
+        # Compute moments for diagnostics
+        mean = np.sum(composite) if len(composite) > 0 else 0.0
+        variance = 2 * np.sum(composite**2) if len(composite) > 0 else 0.0
+
+        return PValueResult(
+            pvalue=pvalue,
+            statistic=statistic,
+            method="liu",
+            mean=mean,
+            variance=variance,
+            df=df,
+            delta=delta
+        )
 
     elif method == "gamma":
+        # For gamma method, use the scaled eigenvalues approach
+        eigenvalues_x_scaled = eigenvalues_x / n
+        eigenvalues_y_scaled = eigenvalues_y / n
         return gamma_approximation_pvalue(
             statistic, eigenvalues_x_scaled, eigenvalues_y_scaled, n, clamp_min, clamp_max
         )
