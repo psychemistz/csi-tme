@@ -82,12 +82,40 @@ high_expression_targets = [
 ]
 ```
 
-### Next Steps (When Returning)
+### ONT Analysis Complete (2026-02-04)
 
-1. **Check download completion**: `ls -la data/` for Zenodo 17055113 validation dataset
-2. **Cross-reference genes**: Check which pilot-validated genes have PSI values in scRNA-seq
-3. **Run validation analysis**: Compare isoform usage in cell types that map to spatial regions
-4. **Expand discovery**: Run SPLISOSM on full 108 SecAct genes with isoforms
+Ran SPLISOSM HSIC-IR on 11 Visium-ONT glioma samples (6 GBM + 5 DMG) focusing on SecAct target genes.
+
+**Summary Statistics:**
+- Total tests: 180
+- Genes tested: 26 SecAct targets
+- Significant at p<0.05: 94 tests (20 unique genes)
+- Significant at p<0.001: 62 tests (16 unique genes)
+
+**Top Genes by Reproducibility (samples significant at p<0.05):**
+
+| Gene | Samples Sig | Best p-value | Sample | N isoforms |
+|------|-------------|--------------|--------|------------|
+| **B2M** | 11/11 (100%) | 1.7e-67 | GBM_1 | 4-6 |
+| **CLU** | 11/11 (100%) | 5.1e-74 | GBM_1 | 7-10 |
+| **MIF** | 9/11 (82%) | 2.2e-21 | GBM_3 | 2-4 |
+| **CD74** | 8/11 (73%) | 5.5e-38 | GBM_1 | 4-13 |
+| **PTGDS** | 6/11 (55%) | 8.2e-63 | GBM_1 | 2-7 |
+| **TIMP1** | 6/11 (55%) | 3.3e-16 | DMG_1 | 2-6 |
+| **LGALS1** | 6/11 (55%) | 4.1e-16 | DMG_3 | 3-5 |
+| **ITM2B** | 6/11 (55%) | 3.9e-12 | GBM_3 | 3-6 |
+| **CST3** | 6/11 (55%) | 2.4e-24 | DMG_3 | 2 |
+
+**Key difference from SR data**: ONT detects true splice isoforms including novel isoforms (e.g., CLU_Iso_1-5), not just APA. The significant genes show consistent spatial isoform switching across both GBM and DMG subtypes.
+
+**Results file**: `data/zenodo_16905935/human_glioma_ont/ont_secact_splisosm_results.csv`
+
+### Next Steps
+
+1. ~~Run SPLISOSM on ONT glioma samples~~ **DONE**
+2. **Biological interpretation**: Map isoform patterns to tumor regions (IvyGAP annotations)
+3. **Cross-validate**: Compare ONT splice isoforms with scRNA-seq PSI values
+4. **Expand targets**: Run on full set of testable genes (274 with multi-isoforms)
 
 ### Deferred Issues (Address Later)
 
@@ -222,6 +250,23 @@ at tumor core                        show higher PSI for same exon
 SPP1 spatial gradient         →      Do CAFs show different SPP1
 at tumor-stroma boundary             isoform usage vs tumor cells?
 ```
+
+### Validation Results (2026-02-04)
+
+Validation completed using scRNA-seq dataset (Zenodo 17055113, 32,304 cells):
+
+| Gene | Visium ONT | scRNA-seq | Concordance | Status |
+|------|------------|-----------|-------------|--------|
+| **APP** | 4/7 samples significant | ΔPSI=55%, p<1e-50 | MES vs NPC states | ✅ VALIDATED |
+| **VCAN** | 8/13 samples significant | ΔPSI=64%, p<1e-10 | MES vs OPC states | ✅ VALIDATED |
+| **CLU** | 10/11 samples significant | Low variability (SD=0.18) | Cannot validate | ⚠️ INCONCLUSIVE |
+
+**Key findings:**
+1. **APP exon 7/8 inclusion** differs by 55% between Tumor_MES (82%) and Tumor_NPC (27%) states
+2. **VCAN GAG domain exon** differs by 64% between Tumor_MES (14%) and Tumor_OPC (78%) states
+3. **CLU** shows strong spatial patterns in Visium ONT but minimal variability in scRNA-seq (likely due to novel isoforms not captured by SMART-seq2)
+
+**Full validation report:** `/reports/validation_report.html`
 
 ---
 

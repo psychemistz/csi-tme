@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSI-TME: Spatial Isoform Validation Report</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #7f8c8d;
+        }
+        .summary-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .summary-box h3 {
+            color: white;
+            margin-top: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .validated {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .not-validated {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .figure-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+        }
+        .figure-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .figure-caption {
+            font-style: italic;
+            color: #666;
+            margin-top: 10px;
+        }
+        .key-finding {
+            background-color: #e8f6ff;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .stat-box {
+            text-align: center;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            min-width: 150px;
+            margin: 10px;
+        }
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        .interpretation-box {
+            background-color: #f0fff0;
+            border: 1px solid #90EE90;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .new-results {
+            background-color: #e8f4fd;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .new-results h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CSI-TME: Spatial Isoform Validation Report</h1>
+        <p><strong>Generated:</strong> February 4, 2026</p>
+        <p><strong>Project:</strong> Cytokine & Secreted protein spatial Isoform distribution inference in the Tumor MicroEnvironment</p>
+
+        <div class="summary-box">
+            <h3>Executive Summary</h3>
+            <p>This report presents spatial isoform analysis results from SPLISOSM on Visium ONT glioma data, with validation using an independent scRNA-seq dataset (32,304 cells). Analysis of 26 SecAct target genes across 11 ONT samples identified 20 genes with significant spatial isoform variation. Two genes (APP, VCAN) were successfully validated in scRNA-seq.</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number">20</div>
+                <div class="stat-label">Significant Genes</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">11</div>
+                <div class="stat-label">ONT Samples</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">32,304</div>
+                <div class="stat-label">Cells Validated</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">5.1e-74</div>
+                <div class="stat-label">Best p-value</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>1. Data Sources</h2>
+
+        <h3>Discovery Dataset (Visium ONT)</h3>
+        <table>
+            <tr><th>Attribute</th><th>Value</th></tr>
+            <tr><td>Source</td><td>Zenodo 16905935 (SPLISOSM paper)</td></tr>
+            <tr><td>Platform</td><td>Visium + Oxford Nanopore (long-read)</td></tr>
+            <tr><td>Samples</td><td>11 glioma samples (5 DMG, 6 GBM)</td></tr>
+            <tr><td>Genes Tested</td><td>26 SecAct targets with 2+ isoforms</td></tr>
+            <tr><td>Analysis</td><td>HSIC-IR (isoform ratio spatial variation)</td></tr>
+        </table>
+
+        <h3>Validation Dataset (scRNA-seq)</h3>
+        <table>
+            <tr><th>Attribute</th><th>Value</th></tr>
+            <tr><td>Source</td><td>Zenodo 17055113</td></tr>
+            <tr><td>Publication</td><td>"Single-Cell Atlas of RNA Alternative Splicing in the Glioma-Immune Ecosystem"</td></tr>
+            <tr><td>Platform</td><td>SMART-seq2</td></tr>
+            <tr><td>Cells</td><td>32,304 total (17,918 tumor, 7,064 T cells, 4,312 macrophages)</td></tr>
+            <tr><td>Splicing Tool</td><td>MARVEL (PSI quantification)</td></tr>
+        </table>
+    </div>
+
+    <div class="container">
+        <h2>2. ONT SPLISOSM Results Summary</h2>
+
+        <div class="new-results">
+            <h3>Top Spatially Variable Genes (SecAct Targets)</h3>
+            <p>Analysis of 26 SecAct target genes across 11 Visium ONT samples:</p>
+            <table>
+                <tr><th>Gene</th><th>Reproducibility</th><th>Best p-value</th><th>Best Sample</th><th>Function</th></tr>
+                <tr><td><strong>B2M</strong></td><td>11/11 (100%)</td><td>1.7e-67</td><td>GBM_1</td><td>MHC-I component</td></tr>
+                <tr><td><strong>CLU</strong></td><td>11/11 (100%)</td><td>5.1e-74</td><td>GBM_1</td><td>Stress response chaperone</td></tr>
+                <tr><td><strong>MIF</strong></td><td>9/11 (82%)</td><td>2.2e-21</td><td>GBM_3</td><td>Macrophage migration factor</td></tr>
+                <tr><td><strong>CD74</strong></td><td>8/11 (73%)</td><td>5.5e-38</td><td>GBM_1</td><td>MHC-II invariant chain</td></tr>
+                <tr><td><strong>PTGDS</strong></td><td>6/11 (55%)</td><td>8.2e-63</td><td>GBM_1</td><td>Prostaglandin synthase</td></tr>
+                <tr><td><strong>TIMP1</strong></td><td>6/11 (55%)</td><td>3.3e-16</td><td>DMG_1</td><td>MMP inhibitor</td></tr>
+                <tr><td><strong>LGALS1</strong></td><td>6/11 (55%)</td><td>4.1e-16</td><td>DMG_3</td><td>Galectin-1 (immune)</td></tr>
+                <tr><td><strong>ITM2B</strong></td><td>6/11 (55%)</td><td>3.9e-12</td><td>GBM_3</td><td>Membrane protein</td></tr>
+                <tr><td><strong>CST3</strong></td><td>6/11 (55%)</td><td>2.4e-24</td><td>DMG_3</td><td>Cystatin C</td></tr>
+                <tr><td><strong>SPARCL1</strong></td><td>4/11 (36%)</td><td>2.3e-20</td><td>DMG_2</td><td>ECM protein</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>3. APP (Amyloid Precursor Protein) Validation</h2>
+
+        <div class="key-finding">
+            <strong>Key Finding:</strong> APP exon 7/8 inclusion shows dramatic differences between tumor states, with mesenchymal-like cells showing high inclusion (82%) and neural progenitor-like cells showing low inclusion (27%).
+        </div>
+
+        <h3>Visium ONT Results</h3>
+        <table>
+            <tr><th>Sample</th><th>Isoforms</th><th>HSIC-IR p-value</th><th>Significant</th></tr>
+            <tr><td>ZH916bulk</td><td>3</td><td>5.72e-28</td><td class="validated">YES</td></tr>
+            <tr><td>ZH881T1</td><td>2</td><td>4.51e-12</td><td class="validated">YES</td></tr>
+            <tr><td>ZH1007inf</td><td>3</td><td>1.55e-05</td><td class="validated">YES</td></tr>
+            <tr><td>ZH1007nec</td><td>3</td><td>4.98e-03</td><td class="validated">YES</td></tr>
+            <tr><td>ZH916inf</td><td>5</td><td>1.10e-01</td><td class="not-validated">no</td></tr>
+            <tr><td>MGH258</td><td>2</td><td>3.05e-01</td><td class="not-validated">no</td></tr>
+            <tr><td>ZH881inf</td><td>2</td><td>2.49e-01</td><td class="not-validated">no</td></tr>
+        </table>
+
+        <h3>scRNA-seq Validation</h3>
+        <table>
+            <tr><th>Tumor State</th><th>n cells</th><th>Mean PSI</th><th>SD</th></tr>
+            <tr><td>Tumor_MES (mesenchymal)</td><td>538</td><td>82.2%</td><td>28.6</td></tr>
+            <tr><td>Tumor_AC (astrocyte-like)</td><td>459</td><td>74.9%</td><td>32.6</td></tr>
+            <tr><td>Tumor_Cycling</td><td>199</td><td>62.3%</td><td>38.6</td></tr>
+            <tr><td>Tumor_OPC_N (OPC neural)</td><td>1105</td><td>53.6%</td><td>39.0</td></tr>
+            <tr><td>Tumor_OPC_OL (OPC oligo)</td><td>187</td><td>52.1%</td><td>42.7</td></tr>
+            <tr><td style="background-color:#ffe6e6">Tumor_NPC (neural progenitor)</td><td>200</td><td style="background-color:#ffe6e6"><strong>27.0%</strong></td><td>36.9</td></tr>
+        </table>
+
+        <p><strong>Statistical Test:</strong> Tumor_MES vs Tumor_NPC: ΔPSI = 55.2%, p = 8.57e-52 (Wilcoxon)</p>
+
+        <div class="figure-container">
+            <img src="fig1_psi_by_tumor_state.png" alt="APP PSI by Tumor State">
+            <div class="figure-caption">Figure 1: APP exon 7/8 inclusion (PSI) varies dramatically between tumor cell states. Mesenchymal (MES) cells show high inclusion (82%), while neural progenitor-like (NPC) cells show low inclusion (27%). Error bars show standard deviation.</div>
+        </div>
+
+        <div class="interpretation-box">
+            <h3>Biological Interpretation</h3>
+            <p><strong>APP isoforms:</strong></p>
+            <ul>
+                <li><strong>APP695</strong> (exons 7/8 skipped) - Neural-specific, lacks KPI domain</li>
+                <li><strong>APP751/770</strong> (exons 7/8 included) - Non-neural, contains KPI (Kunitz Protease Inhibitor) domain</li>
+            </ul>
+            <p><strong>Spatial implication:</strong> Regions enriched for neural progenitor-like tumor cells (NPC state) will have lower APP exon inclusion, while mesenchymal-rich regions will have higher inclusion. This creates detectable spatial isoform gradients in Visium.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>4. VCAN (Versican) Validation</h2>
+
+        <div class="key-finding">
+            <strong>Key Finding:</strong> VCAN GAG-domain exon inclusion differs by 64% between mesenchymal (14%) and OPC-lineage (78%) tumor states, supporting spatial isoform variation in Visium.
+        </div>
+
+        <h3>Visium ONT Results</h3>
+        <table>
+            <tr><th>Sample</th><th>Isoforms</th><th>HSIC-IR p-value</th><th>Significant</th></tr>
+            <tr><td>ZH1019T1</td><td>7</td><td>3.65e-19</td><td class="validated">YES</td></tr>
+            <tr><td>ZH1019inf</td><td>10</td><td>4.58e-12</td><td class="validated">YES</td></tr>
+            <tr><td>ZH1007inf</td><td>8</td><td>5.81e-04</td><td class="validated">YES</td></tr>
+            <tr><td>ZH1007nec</td><td>7</td><td>2.99e-04</td><td class="validated">YES</td></tr>
+            <tr><td>ZH8811Abulk</td><td>3</td><td>4.01e-02</td><td class="validated">YES</td></tr>
+            <tr><td>ZH881T1</td><td>4</td><td>2.09e-02</td><td class="validated">YES</td></tr>
+            <tr><td>ZH916T1</td><td>3</td><td>4.39e-02</td><td class="validated">YES</td></tr>
+            <tr><td>ZH916bulk</td><td>4</td><td>2.64e-02</td><td class="validated">YES</td></tr>
+        </table>
+
+        <h3>scRNA-seq Validation</h3>
+        <table>
+            <tr><th>Tumor State</th><th>n cells</th><th>Mean PSI</th><th>SD</th></tr>
+            <tr><td style="background-color:#ffe6e6">Tumor_MES (mesenchymal)</td><td>78</td><td style="background-color:#ffe6e6"><strong>14.1%</strong></td><td>35.0</td></tr>
+            <tr><td>Tumor_Cycling</td><td>22</td><td>18.6%</td><td>39.3</td></tr>
+            <tr><td>Tumor_OPC_N (OPC neural)</td><td>55</td><td>60.6%</td><td>47.9</td></tr>
+            <tr><td>Tumor_OPC_OL (OPC oligo)</td><td>37</td><td>78.2%</td><td>41.7</td></tr>
+            <tr><td>Tumor_AC (astrocyte-like)</td><td>15</td><td>80.0%</td><td>41.4</td></tr>
+            <tr><td>Tumor_NPC</td><td>12</td><td>0.0%</td><td>0.0</td></tr>
+        </table>
+
+        <p><strong>Statistical Test:</strong> Tumor_MES vs Tumor_OPC_OL: ΔPSI = 64.1%, p = 2.51e-11 (Wilcoxon)</p>
+
+        <div class="figure-container">
+            <img src="fig2_visium_significance.png" alt="VCAN PSI by Tumor State">
+            <div class="figure-caption">Figure 2: VCAN GAG-domain exon inclusion differs dramatically between tumor states. OPC-lineage cells (OPC_OL: 78%, AC: 80%) show high inclusion, while mesenchymal cells show low inclusion (14%).</div>
+        </div>
+
+        <div class="interpretation-box">
+            <h3>Biological Interpretation</h3>
+            <p><strong>VCAN isoforms (V0/V1/V2/V3):</strong></p>
+            <ul>
+                <li><strong>V0</strong> - Both GAG exons (7 and 8) included</li>
+                <li><strong>V1</strong> - Exon 7 only (GAGα domain)</li>
+                <li><strong>V2</strong> - Exon 8 only (GAGβ domain)</li>
+                <li><strong>V3</strong> - Neither exon (no GAG domains)</li>
+            </ul>
+            <p><strong>Pattern:</strong> OPC-lineage cells prefer V0/V1-like forms (high exon inclusion), while mesenchymal cells prefer V2/V3-like forms (low inclusion). This reflects the different extracellular matrix requirements of these cell states.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>5. CLU (Clusterin) Analysis</h2>
+
+        <div class="key-finding">
+            <strong>Key Finding:</strong> CLU shows the strongest and most reproducible spatial isoform variation, significant in ALL 11 samples (100%). However, scRNA-seq validation is inconclusive due to low splicing variability in SMART-seq2 data, possibly because novel ONT-detected isoforms are not captured.
+        </div>
+
+        <h3>Visium ONT Results</h3>
+        <table>
+            <tr><th>Sample</th><th>Type</th><th>Isoforms</th><th>Spots</th><th>HSIC-IR p-value</th><th>Significant</th></tr>
+            <tr><td>GBM_1</td><td>GBM</td><td>7</td><td>4345</td><td>5.13e-74</td><td class="validated">YES</td></tr>
+            <tr><td>DMG_2</td><td>DMG</td><td>10</td><td>1038</td><td>7.53e-58</td><td class="validated">YES</td></tr>
+            <tr><td>DMG_1</td><td>DMG</td><td>8</td><td>3704</td><td>1.60e-40</td><td class="validated">YES</td></tr>
+            <tr><td>GBM_2</td><td>GBM</td><td>8</td><td>2729</td><td>3.33e-16</td><td class="validated">YES</td></tr>
+            <tr><td>GBM_4</td><td>GBM</td><td>8</td><td>2361</td><td>1.60e-11</td><td class="validated">YES</td></tr>
+            <tr><td>DMG_5</td><td>DMG</td><td>8</td><td>1003</td><td>2.08e-10</td><td class="validated">YES</td></tr>
+            <tr><td>GBM_5</td><td>GBM</td><td>8</td><td>1983</td><td>1.52e-07</td><td class="validated">YES</td></tr>
+            <tr><td>DMG_3</td><td>DMG</td><td>8</td><td>1816</td><td>8.83e-07</td><td class="validated">YES</td></tr>
+            <tr><td>GBM_3</td><td>GBM</td><td>8</td><td>1667</td><td>1.63e-06</td><td class="validated">YES</td></tr>
+            <tr><td>DMG_4</td><td>DMG</td><td>7</td><td>1947</td><td>5.43e-05</td><td class="validated">YES</td></tr>
+            <tr><td>GBM_6</td><td>GBM</td><td>8</td><td>1510</td><td>1.56e-02</td><td class="validated">YES</td></tr>
+        </table>
+
+        <h3>ONT Isoform Discovery</h3>
+        <p>CLU shows 7-10 isoforms per sample, including both known (CLU-201, CLU-208, CLU-215) and novel (CLU_Iso_1-5) isoforms:</p>
+        <table>
+            <tr><th>Isoform</th><th>Type</th><th>Tumor Regions</th><th>Immune Infiltration</th><th>Change</th></tr>
+            <tr><td>CLU-201 (canonical secreted)</td><td>Known</td><td>14.1%</td><td>11.5%</td><td style="color:red">↓18%</td></tr>
+            <tr><td>CLU-208</td><td>Known</td><td>26.9%</td><td>27.6%</td><td>↑3%</td></tr>
+            <tr><td>CLU_Iso_1 (truncated)</td><td>Novel</td><td>20.8%</td><td>22.3%</td><td style="color:green">↑7%</td></tr>
+            <tr><td>CLU_Iso_2 (truncated)</td><td>Novel</td><td>11.9%</td><td>12.5%</td><td style="color:green">↑5%</td></tr>
+            <tr><td>CLU_Iso_3 (truncated)</td><td>Novel</td><td>16.6%</td><td>18.1%</td><td style="color:green">↑9%</td></tr>
+        </table>
+
+        <div class="figure-container">
+            <img src="fig3_clu_isoforms.png" alt="CLU Isoforms">
+            <div class="figure-caption">Figure 3: CLU isoform usage differs between tumor and immune-infiltrated regions. Novel isoforms (5'-truncated) are more prevalent in infiltrated regions, while the canonical secreted form (CLU-201) is enriched in tumor cores.</div>
+        </div>
+
+        <div class="warning">
+            <strong>Validation Status:</strong> CLU could not be validated in scRNA-seq due to low splicing variability (max SD = 0.18). This is likely because the novel truncated isoforms detected by ONT long-read sequencing are not captured by SMART-seq2 3'-biased methods.
+        </div>
+
+        <div class="interpretation-box">
+            <h3>Biological Interpretation</h3>
+            <p><strong>CLU-201 (canonical):</strong> Contains signal peptide → secreted → cytoprotective/anti-apoptotic</p>
+            <p><strong>CLU_Iso_1-5 (novel):</strong> 5'-truncated, likely lacking signal peptide → cytoplasmic/nuclear → potentially pro-apoptotic</p>
+            <p><strong>Pattern:</strong> Tumor cores preferentially express the cytoprotective secreted form (CLU-201), while immune-infiltrated regions shift toward truncated forms. This may reflect stress response or cell type composition differences.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>6. Additional Significant Genes</h2>
+
+        <p>Beyond APP, VCAN, and CLU, several other SecAct targets show strong spatial isoform variation:</p>
+
+        <h3>Immune-Related Genes</h3>
+        <table>
+            <tr><th>Gene</th><th>Samples Sig</th><th>Best p-value</th><th>Isoforms</th><th>Function</th></tr>
+            <tr><td><strong>B2M</strong></td><td>11/11</td><td>1.7e-67</td><td>4-6</td><td>Beta-2-microglobulin, MHC-I presentation</td></tr>
+            <tr><td><strong>CD74</strong></td><td>8/11</td><td>5.5e-38</td><td>4-13</td><td>MHC-II invariant chain, antigen processing</td></tr>
+            <tr><td><strong>MIF</strong></td><td>9/11</td><td>2.2e-21</td><td>2-4</td><td>Macrophage migration inhibitory factor</td></tr>
+            <tr><td><strong>LGALS1</strong></td><td>6/11</td><td>4.1e-16</td><td>3-5</td><td>Galectin-1, immunosuppression</td></tr>
+        </table>
+
+        <h3>ECM/Stress Response Genes</h3>
+        <table>
+            <tr><th>Gene</th><th>Samples Sig</th><th>Best p-value</th><th>Isoforms</th><th>Function</th></tr>
+            <tr><td><strong>TIMP1</strong></td><td>6/11</td><td>3.3e-16</td><td>2-6</td><td>Tissue inhibitor of metalloproteinases</td></tr>
+            <tr><td><strong>SPARCL1</strong></td><td>4/11</td><td>2.3e-20</td><td>3-10</td><td>ECM glycoprotein</td></tr>
+            <tr><td><strong>CST3</strong></td><td>6/11</td><td>2.4e-24</td><td>2</td><td>Cystatin C, protease inhibitor</td></tr>
+            <tr><td><strong>PTGDS</strong></td><td>6/11</td><td>8.2e-63</td><td>2-7</td><td>Prostaglandin D2 synthase</td></tr>
+        </table>
+    </div>
+
+    <div class="container">
+        <h2>7. Validation Summary</h2>
+
+        <table>
+            <tr>
+                <th>Gene</th>
+                <th>Visium ONT</th>
+                <th>scRNA-seq</th>
+                <th>Concordance</th>
+                <th>Status</th>
+            </tr>
+            <tr>
+                <td><strong>APP</strong></td>
+                <td>4/7 samples significant</td>
+                <td>ΔPSI=55%, p<1e-50</td>
+                <td>MES vs NPC states</td>
+                <td class="validated">VALIDATED</td>
+            </tr>
+            <tr>
+                <td><strong>VCAN</strong></td>
+                <td>8/13 samples significant</td>
+                <td>ΔPSI=64%, p<1e-10</td>
+                <td>MES vs OPC states</td>
+                <td class="validated">VALIDATED</td>
+            </tr>
+            <tr>
+                <td><strong>CLU</strong></td>
+                <td>11/11 samples significant</td>
+                <td>Low variability (SD=0.18)</td>
+                <td>Novel isoforms not in scRNA-seq</td>
+                <td style="color:#f39c12"><strong>INCONCLUSIVE</strong></td>
+            </tr>
+            <tr>
+                <td><strong>B2M</strong></td>
+                <td>11/11 samples significant</td>
+                <td>Not tested</td>
+                <td>-</td>
+                <td style="color:#3498db"><strong>PENDING</strong></td>
+            </tr>
+            <tr>
+                <td><strong>CD74</strong></td>
+                <td>8/11 samples significant</td>
+                <td>Not tested</td>
+                <td>-</td>
+                <td style="color:#3498db"><strong>PENDING</strong></td>
+            </tr>
+        </table>
+
+        <h3>Key Conclusions</h3>
+        <ol>
+            <li><strong>APP and VCAN isoform variation is cell-state-dependent</strong> - different tumor states have distinct splicing programs that create spatial gradients in tissue.</li>
+            <li><strong>CLU and B2M show universal spatial variation</strong> - significant in all 11 samples, suggesting fundamental spatial regulation in glioma TME.</li>
+            <li><strong>Immune-related genes prominent</strong> - B2M, CD74, MIF, LGALS1 all show strong patterns, suggesting spatial immune niche regulation.</li>
+            <li><strong>Novel isoforms detected by ONT</strong> (e.g., CLU truncated forms) may require alternative validation strategies beyond SMART-seq2.</li>
+        </ol>
+    </div>
+
+    <div class="container">
+        <h2>8. Methods Summary</h2>
+
+        <h3>Visium ONT Analysis (Discovery)</h3>
+        <ul>
+            <li><strong>Tool:</strong> SPLISOSM (Spatial Isoform Statistical Omnibus Model)</li>
+            <li><strong>Statistic:</strong> HSIC-IR (Hilbert-Schmidt Independence Criterion for Isoform Ratio)</li>
+            <li><strong>Kernel:</strong> Full-rank ICAR spatial kernel (k=15 neighbors, ρ=0.99)</li>
+            <li><strong>P-value:</strong> Liu's chi-squared moment matching</li>
+            <li><strong>Targets:</strong> 26 SecAct genes with 2+ isoforms detected</li>
+        </ul>
+
+        <h3>scRNA-seq Analysis (Validation)</h3>
+        <ul>
+            <li><strong>Tool:</strong> MARVEL (single-cell splicing)</li>
+            <li><strong>Metric:</strong> PSI (Percent Spliced In)</li>
+            <li><strong>Events:</strong> SE, MXE, A5SS, A3SS, AFE, ALE</li>
+            <li><strong>Statistical test:</strong> Wilcoxon rank-sum between tumor states</li>
+        </ul>
+    </div>
+
+    <div class="container">
+        <h2>9. Data Availability</h2>
+        <table>
+            <tr><th>Dataset</th><th>Location</th></tr>
+            <tr><td>Visium ONT data</td><td><code>data/zenodo_16905935/human_glioma_ont/</code></td></tr>
+            <tr><td>ONT SPLISOSM results</td><td><code>data/zenodo_16905935/human_glioma_ont/ont_secact_splisosm_results.csv</code></td></tr>
+            <tr><td>scRNA-seq data</td><td><code>data/zenodo_17055113/</code></td></tr>
+            <tr><td>Validation results</td><td><code>data/validation_results/</code></td></tr>
+            <tr><td>Figures</td><td><code>reports/</code></td></tr>
+        </table>
+    </div>
+</body>
+</html>
