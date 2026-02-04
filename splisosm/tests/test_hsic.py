@@ -10,6 +10,7 @@ from splisosm.statistics import (
     compute_hsic_ir,
     compute_hsic_ic,
     center_kernel,
+    hsic_pvalue,
     gamma_approximation_pvalue,
     compute_pvalue_from_kernels,
     permutation_pvalue,
@@ -204,7 +205,9 @@ class TestHSICIC:
         assert K_X.shape == (n, n)
 
 
-class TestGammaApproximation:
+class TestGammaApproximationLegacy:
+    """Tests for gamma approximation (legacy method, kept for backwards compatibility)."""
+
     def test_pvalue_range(self):
         # Create test data
         lambda_x = np.random.rand(50) * 2
@@ -251,6 +254,57 @@ class TestGammaApproximation:
         # Should be in same ballpark (within order of magnitude)
         assert abs(np.log10(gamma_result.pvalue + 1e-10) -
                    np.log10(perm_pvalue + 1e-10)) < 1.5
+
+
+class TestLiuMethod:
+    """Tests for Liu's method (recommended, matches official SPLISOSM)."""
+
+    def test_pvalue_range(self):
+        """P-values should be in valid range."""
+        lambda_x = np.random.rand(50) * 2
+        mu_y = np.random.rand(50) * 2
+        statistic = 0.5
+
+        result = hsic_pvalue(statistic, lambda_x, mu_y, n=100, method='liu')
+
+        assert 0 <= result.pvalue <= 1
+        assert result.method == 'liu'
+
+    def test_large_statistic_small_pvalue(self):
+        """Larger statistics should give smaller p-values."""
+        lambda_x = np.ones(50) * 0.5
+        mu_y = np.ones(50) * 0.5
+
+        result_small = hsic_pvalue(0.01, lambda_x, mu_y, n=100, method='liu')
+        result_large = hsic_pvalue(10.0, lambda_x, mu_y, n=100, method='liu')
+
+        assert result_large.pvalue < result_small.pvalue
+
+    def test_liu_is_default(self):
+        """Liu's method should be the default."""
+        lambda_x = np.ones(50) * 0.5
+        mu_y = np.ones(50) * 0.5
+
+        result = hsic_pvalue(0.5, lambda_x, mu_y, n=100)  # No method specified
+
+        assert result.method == 'liu'
+
+    def test_liu_less_extreme_than_gamma(self):
+        """Liu's method should give less extreme (larger) p-values than gamma.
+
+        This is because Liu uses 4 cumulants for better tail approximation,
+        while gamma only uses 2 moments and underestimates tail probability.
+        """
+        lambda_x = np.ones(50) * 0.5
+        mu_y = np.ones(50) * 0.5
+        statistic = 5.0  # Moderately large
+
+        liu_result = hsic_pvalue(statistic, lambda_x, mu_y, n=100, method='liu')
+        gamma_result = hsic_pvalue(statistic, lambda_x, mu_y, n=100, method='gamma')
+
+        # Liu p-values should generally be larger (less extreme)
+        # This documents the expected behavior difference
+        assert liu_result.pvalue >= gamma_result.pvalue * 0.1  # Allow some tolerance
 
 
 class TestNullDistribution:

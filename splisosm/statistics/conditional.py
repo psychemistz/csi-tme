@@ -13,7 +13,7 @@ from numpy.typing import NDArray
 from scipy.interpolate import RBFInterpolator
 
 from .hsic import compute_hsic_statistic, center_kernel, get_kernel_eigenvalues
-from .pvalue import gamma_approximation_pvalue, PValueResult
+from .pvalue import hsic_pvalue, PValueResult
 
 
 @dataclass
@@ -162,9 +162,9 @@ def conditional_hsic(
     eigenvalues_x = get_kernel_eigenvalues(K_X_centered)
     eigenvalues_z = get_kernel_eigenvalues(K_Z_centered)
 
-    # Compute p-value
-    pvalue_result = gamma_approximation_pvalue(
-        statistic, eigenvalues_x, eigenvalues_z, n
+    # Compute p-value using Liu's method (default)
+    pvalue_result = hsic_pvalue(
+        statistic, eigenvalues_x, eigenvalues_z, n, method='liu'
     )
 
     return ConditionalHSICResult(
