@@ -49,12 +49,18 @@ The high correlation indicates that gene rankings are preserved between implemen
 
 ### Systematic Difference
 
-Local p-values are consistently more extreme (smaller) than precomputed values by approximately 1-2 orders of magnitude. This systematic offset does not affect gene prioritization since rankings are preserved.
+Local p-values are consistently more extreme (smaller) than precomputed values by 40-70 orders of magnitude for top genes. This systematic offset does not affect gene prioritization since rankings are preserved.
 
-Possible sources of difference:
-1. Eigenvalue scaling method
-2. P-value approximation (gamma vs Liu's method)
-3. Minor kernel parameter variations
+**Root cause: P-value approximation method**
+
+| Method | Used By | Moments Matched | Tail Accuracy |
+|--------|---------|-----------------|---------------|
+| **Gamma** | Local validation | 2 (mean, variance) | Underestimates tail probability |
+| **Liu's** | Official SPLISOSM | 4 (+ skewness, kurtosis) | Better tail approximation |
+
+The HSIC null distribution is a weighted chi-squared mixture with heavy tails. Gamma approximation only matches the first two moments, causing it to underestimate how often extreme values occur under the null. For the same test statistic, gamma returns smaller (more extreme) p-values.
+
+To match official results exactly, use `method='liu'` in `hsic_pvalue()`. The current implementation defaults to Liu's method in `single_sample.py`.
 
 ---
 
