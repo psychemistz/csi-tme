@@ -51,6 +51,7 @@ htmlcov/
 *.h5
 *.zarr/
 *.zip
+data/
 
 # OS files
 .DS_Store
