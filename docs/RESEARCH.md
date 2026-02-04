@@ -84,10 +84,25 @@ high_expression_targets = [
 
 ### Next Steps (When Returning)
 
-1. **Check download completion**: `ls -la data/GSE182109/` or new validation dataset
+1. **Check download completion**: `ls -la data/` for Zenodo 17055113 validation dataset
 2. **Cross-reference genes**: Check which pilot-validated genes have PSI values in scRNA-seq
 3. **Run validation analysis**: Compare isoform usage in cell types that map to spatial regions
 4. **Expand discovery**: Run SPLISOSM on full 108 SecAct genes with isoforms
+
+### Deferred Issues (Address Later)
+
+**Target Selection Concerns** (see `docs/TARGET_GUIDE.md`):
+- Pilot targets selected based on data availability, not TARGET_GUIDE criteria
+- Known isoforms for VCAN/APP/CLU are internal/5' differences (not 3'-detectable)
+- We're detecting **spatial APA variation**, not classical splice isoforms
+- Need PolyASite validation to confirm APA sites at detected peak positions
+
+**Covariate Modeling** (not used in pilot):
+- Conditional HSIC with RBPs implemented but not run
+- IvyGAP regional annotations available (CT/LE/MVP/PAN)
+- Consider adding for mechanistic insight after validation complete
+
+**Action for later**: Query PolyASite for HMGB1, SPP1, VCAN, C3, IGFBP5 to validate APA biology
 
 ### Validation Logic
 
