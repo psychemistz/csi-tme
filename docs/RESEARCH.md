@@ -158,16 +158,56 @@ APA is biologically meaningful, just different from splice isoforms:
 | **mRNA localization** | UTR elements direct subcellular location | Spatial protein distribution |
 | **Immune activation** | Global 3' UTR shortening in T cells | Enhanced effector function |
 
-### Reframed Interpretation
+### Platform-Specific Interpretation
 
-**Original framing**: "Spatial isoform switching of cytokines in TME"
+| Platform | Detects | Framing | Application |
+|----------|---------|---------|-------------|
+| **Visium 3' SR** | APA (3' UTR length) | "Spatial APA variation" | Current pilot data |
+| **Visium ONT** | Full-length transcripts | "Spatial isoform switching" | Future analysis |
 
-**Accurate framing**: "Spatial APA variation of secreted proteins in TME"
+#### For Visium 3' SR Data (Current)
 
-This is still scientifically valid and potentially novel - spatial APA patterns in glioma have not been systematically characterized. However:
+**Framing**: "Spatial APA variation of secreted proteins in TME"
+
+This is scientifically valid and potentially novel - spatial APA patterns in glioma have not been systematically characterized. However:
 1. Cannot claim findings relate to known functional isoforms (VCAN V0-V3, etc.)
 2. Should cite APA literature, not splice isoform literature
 3. Validation should focus on 3' UTR biology, not protein isoform function
+
+#### For Visium ONT Data (Future)
+
+**Framing**: "Spatial isoform switching of cytokines/secreted proteins in TME"
+
+Long-read Visium ONT can detect true splice isoforms including:
+- Internal exon skipping (VCAN V0-V3, SPP1a/b/c, APP695/751/770)
+- Alternative 5' TSS (CLU nuclear vs secreted)
+- Full transcript structure
+
+**Available ONT data**: `data/zenodo_16905935/human_glioma_ont/` (11 samples)
+- Can directly test TARGET_GUIDE Tier 1 hypotheses
+- Can validate if APA patterns correlate with splice isoform patterns
+- Enables true "isoform switching" analysis as originally planned
+
+### Recommended Two-Phase Approach
+
+```
+Phase 1 (Current): Visium 3' SR Analysis
+────────────────────────────────────────
+- Detect spatial APA variation
+- Identify genes with 3' end spatial patterns
+- Validate with scRNA-seq (cell type APA differences)
+- Publish as: "Spatial APA landscape in glioma TME"
+
+Phase 2 (Future): Visium ONT Analysis
+──────────────────────────────────────
+- Analyze same genes in ONT data
+- Detect true splice isoform switching
+- Correlate APA with splice patterns
+- Test TARGET_GUIDE Tier 1 targets (VEGFA, IL33, CXCL12)
+- Publish as: "Spatial isoform switching of cytokines in TME"
+```
+
+This two-phase approach leverages both datasets and provides complementary biological insights.
 
 ### Validation Logic
 
