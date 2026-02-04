@@ -268,7 +268,7 @@ def hsic_pvalue(
     Parameters
     ----------
     statistic : float
-        HSIC test statistic
+        HSIC test statistic (normalized by (n-1)^2 or n^2)
     eigenvalues_x : ndarray
         Eigenvalues of centered feature kernel
     eigenvalues_y : ndarray
@@ -285,15 +285,26 @@ def hsic_pvalue(
     Returns
     -------
     result : PValueResult
+
+    Notes
+    -----
+    Eigenvalues are scaled by 1/n internally to match the HSIC normalization.
+    This ensures the null distribution moments align with the test statistic.
     """
+    # Scale eigenvalues by 1/n to match HSIC normalization
+    # The HSIC statistic is tr(KHLH)/(n-1)^2, while eigenvalues are
+    # from the unnormalized centered kernels. Scaling aligns the moments.
+    eigenvalues_x_scaled = np.asarray(eigenvalues_x) / n
+    eigenvalues_y_scaled = np.asarray(eigenvalues_y) / n
+
     if method == "liu":
         # Compute composite eigenvalues for Liu's method
-        composite = compute_composite_eigenvalues(eigenvalues_x, eigenvalues_y)
+        composite = compute_composite_eigenvalues(eigenvalues_x_scaled, eigenvalues_y_scaled)
         return liu_pvalue(statistic, composite, n, clamp_min, clamp_max)
 
     elif method == "gamma":
         return gamma_approximation_pvalue(
-            statistic, eigenvalues_x, eigenvalues_y, n, clamp_min, clamp_max
+            statistic, eigenvalues_x_scaled, eigenvalues_y_scaled, n, clamp_min, clamp_max
         )
 
     else:

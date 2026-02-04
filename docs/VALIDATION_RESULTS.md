@@ -6,12 +6,12 @@ This document records the validation of our local SPLISOSM implementation agains
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| **Spearman correlation** | 0.9592 | Excellent |
-| **Pearson correlation** | 0.9802 | Excellent |
-| **Top 100 rank correlation** | 0.9540 | Excellent |
-| **Genes analyzed** | 3,532 | Complete |
+| **Spearman correlation** | 0.9906 | Excellent |
+| **Pearson correlation** | 0.9955 | Excellent |
+| **Top 100 overlap** | 98/100 | Excellent |
+| **Mean log10 p-value diff** | 0.41 | Excellent |
 
-**Conclusion**: Local implementation is functionally equivalent to official SPLISOSM.
+**Conclusion**: Local implementation matches official SPLISOSM with near-perfect correlation.
 
 ---
 
@@ -30,8 +30,8 @@ This document records the validation of our local SPLISOSM implementation agains
 | Spatial kernel | ICAR |
 | k_neighbors | 6 |
 | rho | 0.99 |
-| P-value method | Gamma approximation |
-| Eigenvalue scaling | 1/n |
+| P-value method | Liu's method (4-cumulant) |
+| Eigenvalue scaling | 1/n (applied internally) |
 | Data layer | `ratios_obs` |
 
 ---
@@ -49,40 +49,32 @@ The high correlation indicates that gene rankings are preserved between implemen
 
 ### Systematic Difference
 
-Local p-values are consistently more extreme (smaller) than precomputed values by 40-70 orders of magnitude for top genes. This systematic offset does not affect gene prioritization since rankings are preserved.
+Local p-values are within ~0.4 orders of magnitude (on average) of precomputed values, with excellent preservation of gene rankings.
 
-**Root cause: P-value approximation method**
+**Key fix**: Eigenvalues are now scaled by 1/n internally before p-value computation, aligning the null distribution moments with the HSIC test statistic normalization.
 
-| Method | Used By | Moments Matched | Tail Accuracy |
-|--------|---------|-----------------|---------------|
-| **Gamma** | Local validation | 2 (mean, variance) | Underestimates tail probability |
-| **Liu's** | Official SPLISOSM | 4 (+ skewness, kurtosis) | Better tail approximation |
-
-The HSIC null distribution is a weighted chi-squared mixture with heavy tails. Gamma approximation only matches the first two moments, causing it to underestimate how often extreme values occur under the null. For the same test statistic, gamma returns smaller (more extreme) p-values.
-
-To match official results exactly, use `method='liu'` in `hsic_pvalue()`. The current implementation defaults to Liu's method in `single_sample.py`.
+| Component | Implementation |
+|-----------|----------------|
+| P-value method | Liu's (4-cumulant approximation) |
+| Eigenvalue scaling | 1/n (automatic in `hsic_pvalue()`) |
+| Statistic normalization | (n-1)² (unbiased HSIC) |
 
 ---
 
 ## Top Spatially Variable Genes
 
-| Rank | Gene | Isoforms | Local p-value | Precomputed p-value | Function |
-|------|------|----------|---------------|---------------------|----------|
-| 1 | H3-3A | 2 | 3.75e-96 | 8.12e-46 | Histone H3.3 (glioma driver mutation target) |
-| 2 | NCAM1 | 5 | 7.37e-111 | 7.82e-44 | Neural cell adhesion molecule |
-| 3 | CALM1 | 4 | 1.01e-82 | 9.88e-41 | Calmodulin signaling |
-| 4 | SOX2-OT | 6 | 1.74e-73 | 3.92e-36 | SOX2 overlapping transcript (stemness) |
-| 5 | PABPC1 | 3 | 2.05e-60 | 1.32e-28 | Poly(A) binding protein |
-| 6 | PTMA | 2 | 1.48e-45 | 6.74e-24 | Prothymosin alpha |
-| 7 | GPM6B | 4 | 9.71e-34 | 8.05e-20 | Neuronal membrane glycoprotein |
-| 8 | RAC1 | 2 | 3.54e-40 | 8.85e-20 | Rho GTPase (cell migration) |
-| 9 | SOX2 | 2 | 1.66e-24 | 4.51e-14 | SRY-box 2 (stem cell marker) |
-| 10 | TPM4 | 4 | 2.39e-21 | 8.84e-14 | Tropomyosin 4 |
-| 11 | GFAP | 2 | 5.01e-22 | 5.11e-13 | Glial fibrillary acidic protein |
-| 12 | MYL6 | 2 | 2.65e-24 | 7.54e-13 | Myosin light chain 6 |
-| 13 | CNN3 | 4 | 3.05e-22 | 1.17e-12 | Calponin 3 |
-| 14 | SON | 2 | 1.68e-22 | 9.09e-12 | SON DNA/RNA binding protein |
-| 15 | EID1 | 2 | 1.05e-22 | 1.94e-11 | EP300 interacting inhibitor |
+| Rank | Gene | Isoforms | Local p-value | Precomputed p-value | Diff (log10) |
+|------|------|----------|---------------|---------------------|--------------|
+| 1 | NCAM1 | 5 | 2.03e-48 | 7.82e-44 | +4.6 |
+| 2 | H3-3A | 2 | 4.28e-45 | 8.12e-46 | -0.7 |
+| 3 | CALM1 | 4 | 2.82e-41 | 9.88e-41 | +0.5 |
+| 4 | SOX2-OT | 6 | 7.63e-37 | 3.92e-36 | +0.7 |
+| 5 | PABPC1 | 3 | 3.73e-30 | 1.32e-28 | +1.6 |
+| 6 | PTMA | 2 | 2.68e-24 | 6.74e-24 | +0.4 |
+| 7 | RAC1 | 2 | 6.21e-22 | 8.85e-20 | +2.2 |
+| 8 | GPM6B | 4 | 7.33e-21 | 8.05e-20 | +1.0 |
+| 9 | SOX2 | 2 | 1.03e-14 | 4.51e-14 | +0.6 |
+| 10 | MYL6 | 2 | 1.29e-14 | 7.54e-13 | +1.8 |
 
 ### Biological Interpretation
 
