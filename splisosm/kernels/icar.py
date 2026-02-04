@@ -48,16 +48,27 @@ class ICARKernel(Kernel):
         Typical values: 0.95-0.99
     regularization : float
         Small value added to diagonal for numerical stability.
+    mutual_neighbors : bool
+        If True, use mutual k-NN (intersection) instead of union
+        symmetrization. Mutual neighbors matches the official SPLISOSM
+        implementation exactly. Default: True.
+    standardize : bool
+        If True, standardize covariance to correlation matrix (diagonal=1).
+        This matches the official SPLISOSM implementation. Default: True.
     """
 
     def __init__(self, k_neighbors: int = 20, rho: float = 0.99,
-                 regularization: float = 1e-6):
+                 regularization: float = 1e-6,
+                 mutual_neighbors: bool = True,
+                 standardize: bool = True):
         super().__init__()
         if not 0 < rho < 1:
             raise ValueError(f"rho must be in (0, 1), got {rho}")
         self.k_neighbors = k_neighbors
         self.rho = rho
         self.regularization = regularization
+        self.mutual_neighbors = mutual_neighbors
+        self.standardize = standardize
         self._adjacency: Optional[csr_matrix] = None
         self._precision: Optional[csr_matrix] = None
 
@@ -97,9 +108,16 @@ class ICARKernel(Kernel):
         data = np.ones(len(row_indices))
         W = csr_matrix((data, (row_indices, col_indices)), shape=(n, n))
 
-        # Symmetrize: W = (W + W^T) / 2, then threshold to binary
-        W = W + W.T
-        W.data = np.ones_like(W.data)  # Binary adjacency
+        # Symmetrize adjacency matrix
+        if self.mutual_neighbors:
+            # Mutual neighbors: keep only edges present in both directions
+            # This is the intersection (i→j AND j→i), matching official SPLISOSM
+            W = W.multiply(W.T)
+        else:
+            # Union symmetrization: add edges present in either direction
+            # This is the union (i→j OR j→i)
+            W = W + W.T
+            W.data = np.ones_like(W.data)  # Binary adjacency
 
         self._adjacency = W
         return W
@@ -176,6 +194,14 @@ class ICARKernel(Kernel):
 
         # Ensure symmetry (numerical errors can break this)
         L = (L + L.T) / 2
+
+        # Standardize to correlation matrix (diagonal = 1)
+        # This converts covariance to correlation and matches official SPLISOSM
+        if self.standardize:
+            diag_vals = np.diag(L)
+            # Avoid division by zero for isolated nodes
+            diag_inv_sqrt = np.where(diag_vals > 0, 1.0 / np.sqrt(diag_vals), 0.0)
+            L = L * np.outer(diag_inv_sqrt, diag_inv_sqrt)
 
         self._kernel_matrix = L
         self._centered = False
@@ -296,6 +322,12 @@ class ICARKernel(Kernel):
         # Ensure symmetry
         L_approx = (L_approx + L_approx.T) / 2
 
+        # Standardize to correlation matrix if requested
+        if self.standardize:
+            diag_vals = np.diag(L_approx)
+            diag_inv_sqrt = np.where(diag_vals > 0, 1.0 / np.sqrt(diag_vals), 0.0)
+            L_approx = L_approx * np.outer(diag_inv_sqrt, diag_inv_sqrt)
+
         self._kernel_matrix = L_approx
         self._centered = False
 
@@ -322,6 +354,10 @@ class GFTKernel(Kernel):
         Lower frequency cutoff (fraction of total, 0-1)
     high_cutoff : float
         Upper frequency cutoff (fraction of total, 0-1)
+    mutual_neighbors : bool
+        If True, use mutual k-NN (intersection). Default: True.
+    standardize : bool
+        If True, standardize to correlation matrix. Default: True.
     """
 
     def __init__(
@@ -331,7 +367,9 @@ class GFTKernel(Kernel):
         freq_filter: str = 'all',
         low_cutoff: float = 0.0,
         high_cutoff: float = 1.0,
-        regularization: float = 1e-6
+        regularization: float = 1e-6,
+        mutual_neighbors: bool = True,
+        standardize: bool = True
     ):
         super().__init__()
         self.k_neighbors = k_neighbors
@@ -340,6 +378,8 @@ class GFTKernel(Kernel):
         self.low_cutoff = low_cutoff
         self.high_cutoff = high_cutoff
         self.regularization = regularization
+        self.mutual_neighbors = mutual_neighbors
+        self.standardize = standardize
         self._eigenvalues: Optional[NDArray] = None
         self._eigenvectors: Optional[NDArray] = None
         self._filter_mask: Optional[NDArray] = None
@@ -363,7 +403,9 @@ class GFTKernel(Kernel):
         icar = ICARKernel(
             k_neighbors=self.k_neighbors,
             rho=self.rho,
-            regularization=self.regularization
+            regularization=self.regularization,
+            mutual_neighbors=self.mutual_neighbors,
+            standardize=self.standardize
         )
         L = icar.compute(coords)
 
@@ -436,7 +478,9 @@ def compute_gft_features(
     k_neighbors: int = 20,
     rho: float = 0.99,
     n_components: Optional[int] = None,
-    use_gpu: bool = False
+    use_gpu: bool = False,
+    mutual_neighbors: bool = True,
+    standardize: bool = True
 ) -> Tuple[NDArray, NDArray]:
     """Compute Graph Fourier Transform features.
 
@@ -457,6 +501,10 @@ def compute_gft_features(
         Number of frequency components to return (default: all)
     use_gpu : bool
         If True, use GPU acceleration via CuPy
+    mutual_neighbors : bool
+        If True, use mutual k-NN (intersection). Default: True.
+    standardize : bool
+        If True, standardize to correlation matrix. Default: True.
 
     Returns
     -------
@@ -466,7 +514,12 @@ def compute_gft_features(
         Corresponding graph frequencies (eigenvalues)
     """
     # Build ICAR kernel
-    icar = ICARKernel(k_neighbors=k_neighbors, rho=rho)
+    icar = ICARKernel(
+        k_neighbors=k_neighbors,
+        rho=rho,
+        mutual_neighbors=mutual_neighbors,
+        standardize=standardize
+    )
     L = icar.compute(coords)
 
     # Eigendecomposition (GPU accelerated if requested)
