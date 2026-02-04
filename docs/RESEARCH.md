@@ -8,6 +8,103 @@ This document provides a comprehensive adoption plan for applying SPLISOSM to an
 
 ---
 
+## CURRENT STATUS (Updated 2026-02-04)
+
+### Critical Data Availability Issue
+
+**Problem**: The original 118-study Visium dataset (`/data/parks34/projects/0sigdiscov/moran_i/datasets/visium_large/`) contains **gene-level counts only**, not isoform/transcript-level quantification. SPLISOSM requires isoform-level data for HSIC-IR analysis.
+
+### Revised Workflow
+
+```
+DISCOVERY (Zenodo Glioma Data)          VALIDATION (scRNA-seq)
+─────────────────────────────          ────────────────────────
+
+Zenodo 16905935:                        Zenodo 17055113:
+- 13 Visium-SR glioma samples           - 32,304 cells (SMART-seq2)
+- 11 Visium-ONT glioma samples          - GBM + IDH-mutant glioma
+- Isoform quantification (iso.quant.h5ad) - PSI values (MARVEL)
+                                        - Cell type annotations
+        │                                       │
+        ▼                                       ▼
+   SPLISOSM HSIC-IR                      Check same splicing
+   → Spatially variable                  patterns in target
+   isoform usage                         cell types
+```
+
+### Available Data
+
+| Dataset | Location | Type | Isoform Data? |
+|---------|----------|------|---------------|
+| Zenodo glioma (SR) | `data/zenodo_16905935/human_glioma_sr/` | Spatial | ✅ Yes |
+| Zenodo glioma (ONT) | `data/zenodo_16905935/human_glioma_ont/` | Spatial | ✅ Yes |
+| Zenodo DLPFC | `data/zenodo_16905935/human_dlpfc/` | Spatial | ✅ Yes |
+| scRNA-seq validation | `data/GSE182109/` (downloading) | Single-cell | ✅ Yes (PSI) |
+| Original Visium 118 studies | `/data/parks34/.../visium_large/` | Spatial | ❌ Gene-level only |
+
+### Pilot Results (2026-02-04)
+
+Ran SPLISOSM HSIC-IR on 13 glioma SR samples with high-confidence SecAct targets:
+
+| Gene | Samples Tested | Significant (p<0.05) | Min p-value | Biological Role |
+|------|----------------|---------------------|-------------|-----------------|
+| **HMGB1** | 13 | **11 (85%)** | 4.0e-86 | Alarmin/DAMP |
+| **SPP1** | 11 | **9 (82%)** | 1.1e-90 | Osteopontin, tumor-stroma |
+| **VCAN** | 13 | **8 (62%)** | 3.7e-19 | Versican, ECM |
+| **C3** | 11 | **7 (64%)** | 1.2e-11 | Complement |
+| **IGFBP5** | 6 | **5 (83%)** | 1.3e-05 | IGF signaling |
+| **APP** | 7 | **4 (57%)** | 5.7e-28 | Amyloid precursor |
+
+**Key finding**: Classic cytokines (IL-*, IFN*, TNF*) are NOT detected at isoform level due to low expression in glioma. However, **TME-associated secreted proteins** (HMGB1, SPP1, VCAN, C3) show strong spatially variable isoform patterns.
+
+Results saved: `data/zenodo_16905935/pilot_splisosm_results.csv`
+
+### Revised Target Gene List
+
+Based on actual data availability (SecAct genes with ≥2 isoforms, >500 UMIs):
+
+```python
+# HIGH-CONFIDENCE TARGETS (pilot validated)
+pilot_validated = ['HMGB1', 'SPP1', 'VCAN', 'C3', 'IGFBP5', 'APP']
+
+# ADDITIONAL SECACT GENES WITH ISOFORMS (108 total)
+high_expression_targets = [
+    'CLU',      # Clusterin - 17,661 UMIs
+    'SPARCL1',  # ECM - 8,219 UMIs
+    'ITM2B',    # Membrane protein - 5,032 UMIs
+    'AGT',      # Angiotensinogen - 2,508 UMIs
+    'EDIL3',    # ECM - 1,939 UMIs
+    'DKK3',     # Wnt inhibitor - 1,853 UMIs
+    'NCAM1',    # Neural adhesion - 1,823 UMIs
+    'CTSB',     # Cathepsin B - 1,819 UMIs
+    'SPARC',    # ECM - 1,584 UMIs
+    'CCL2',     # Chemokine - 654 UMIs (only cytokine with coverage)
+]
+```
+
+### Next Steps (When Returning)
+
+1. **Check download completion**: `ls -la data/GSE182109/` or new validation dataset
+2. **Cross-reference genes**: Check which pilot-validated genes have PSI values in scRNA-seq
+3. **Run validation analysis**: Compare isoform usage in cell types that map to spatial regions
+4. **Expand discovery**: Run SPLISOSM on full 108 SecAct genes with isoforms
+
+### Validation Logic
+
+```
+Spatial Discovery                    scRNA-seq Validation
+───────────────                      ────────────────────
+
+HMGB1 isoform A enriched      →      Do tumor cells (core-enriched)
+at tumor core                        show higher PSI for same exon
+                                     vs immune cells (periphery)?
+
+SPP1 spatial gradient         →      Do CAFs show different SPP1
+at tumor-stroma boundary             isoform usage vs tumor cells?
+```
+
+---
+
 ## 1. Core SPLISOSM Statistical Architecture
 
 ### 1.1 HSIC Kernel Independence Testing Framework
