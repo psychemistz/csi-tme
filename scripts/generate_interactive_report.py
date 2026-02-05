@@ -32,6 +32,31 @@ def generate_html(data):
     spacet_results_json = json.dumps(data.get('csv_data', {}).get('spacet_isoform_correlations', []))
     validation_json = json.dumps(data.get('csv_data', {}).get('final_validation_report', []))
 
+    # Prepare image data for interactive viewer
+    images = data.get('images', {})
+
+    def prepare_image_data(img_dict, category):
+        """Convert image dict to list format for JS."""
+        result = []
+        for name, img_data in img_dict.items():
+            result.append({
+                'name': name,
+                'label': name.replace('_', ' ').replace('fig', 'Fig').title(),
+                'data': f"data:{img_data.get('type', 'image/png')};base64,{img_data.get('data', '')}",
+                'filename': img_data.get('filename', name)
+            })
+        return result
+
+    main_figures_list = prepare_image_data(images.get('main_figures', {}), 'main')
+    spacet_plots_list = prepare_image_data(images.get('spacet_plots', {}), 'spacet')
+    spatial_plots_list = prepare_image_data(images.get('spatial_plots', {}), 'spatial')
+
+    images_json = json.dumps({
+        'main': main_figures_list,
+        'spacet': spacet_plots_list,
+        'spatial': spatial_plots_list
+    })
+
     # Summary stats
     stats = data.get('summary_stats', {})
     ont_stats = stats.get('ont', {})
@@ -526,6 +551,19 @@ def generate_html(data):
             <div class="card">
                 <h2>scRNA-seq Differential Splicing</h2>
                 <p>32,304 cells from glioma scRNA-seq dataset. PSI values quantified by MARVEL.</p>
+
+                <div class="event-type-legend" style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:20px;">
+                    <strong>Event Types:</strong>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-top:10px;">
+                        <div><code>SE</code> - Skipped Exon (exon included or excluded)</div>
+                        <div><code>MXE</code> - Mutually Exclusive Exons (one or the other)</div>
+                        <div><code>A5SS</code> - Alternative 5' Splice Site</div>
+                        <div><code>A3SS</code> - Alternative 3' Splice Site</div>
+                        <div><code>AFE</code> - Alternative First Exon</div>
+                        <div><code>ALE</code> - Alternative Last Exon</div>
+                    </div>
+                </div>
+
                 <div class="filter-row">
                     <div class="filter-group">
                         <label>Gene</label>
@@ -564,25 +602,34 @@ def generate_html(data):
         <!-- VISUALIZATIONS TAB -->
         <div id="visualizations" class="tab-content">
             <div class="card">
-                <h2>Main Figures</h2>
-                <div class="image-gallery" id="mainFiguresGallery">
-                    {generate_image_gallery(main_figures, 'main')}
-                </div>
-            </div>
+                <h2>Interactive Figure Viewer</h2>
+                <p>Select a category and figure to view. Click the image to enlarge.</p>
 
-            <div class="card">
-                <h2>SpaCET Deconvolution Plots</h2>
-                <p>Cell type deconvolution showing VCAN isoform correlations with tumor vs macrophage content.</p>
-                <div class="image-gallery" id="spacetGallery">
-                    {generate_image_gallery(spacet_plots, 'spacet')}
+                <div class="filter-row" style="margin-bottom:20px;">
+                    <div class="filter-group">
+                        <label>Category</label>
+                        <select id="viz-category" onchange="updateVizOptions()">
+                            <option value="main">Main Figures</option>
+                            <option value="spacet">SpaCET Deconvolution</option>
+                            <option value="spatial">Spatial Isoform Maps</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Figure</label>
+                        <select id="viz-figure" onchange="showSelectedFigure()">
+                        </select>
+                    </div>
                 </div>
-            </div>
 
-            <div class="card">
-                <h2>Spatial Isoform Maps</h2>
-                <p>Spatial distribution of isoform ratios across tissue sections.</p>
-                <div class="image-gallery" id="spatialGallery">
-                    {generate_image_gallery(spatial_plots, 'spatial')}
+                <div id="viz-description" style="background:#e8f6ff; padding:15px; border-radius:8px; margin-bottom:20px;">
+                    <strong>Main Figures:</strong> Key results including PSI boxplots and spatial isoform switching patterns.
+                </div>
+
+                <div id="viz-container" style="text-align:center; background:#f8f9fa; padding:20px; border-radius:10px; min-height:400px;">
+                    <img id="viz-image" src="" alt="Select a figure" style="max-width:100%; max-height:600px; cursor:pointer; border-radius:5px; box-shadow:0 2px 10px rgba(0,0,0,0.1);" onclick="openModal(this.src)">
+                </div>
+
+                <div id="viz-caption" style="text-align:center; margin-top:15px; font-style:italic; color:#666;">
                 </div>
             </div>
         </div>
@@ -636,6 +683,56 @@ def generate_html(data):
         const scrnaResults = {scrna_results_json};
         const spacetResults = {spacet_results_json};
         const validationData = {validation_json};
+        const imagesData = {images_json};
+
+        // Category descriptions
+        const categoryDescriptions = {{
+            'main': '<strong>Main Figures:</strong> Key results including PSI boxplots by tumor state and spatial isoform switching patterns.',
+            'spacet': '<strong>SpaCET Deconvolution:</strong> Cell type proportion correlations with VCAN isoform ratios. Shows tumor vs macrophage isoform preferences.',
+            'spatial': '<strong>Spatial Isoform Maps:</strong> Spatial distribution of isoform ratios across tissue sections for each sample.'
+        }};
+
+        // Initialize visualization viewer
+        function updateVizOptions() {{
+            const category = document.getElementById('viz-category').value;
+            const figSelect = document.getElementById('viz-figure');
+            const images = imagesData[category] || [];
+
+            // Clear and populate figure dropdown
+            figSelect.innerHTML = '';
+            images.forEach((img, idx) => {{
+                const option = document.createElement('option');
+                option.value = idx;
+                option.textContent = img.label;
+                figSelect.appendChild(option);
+            }});
+
+            // Update description
+            document.getElementById('viz-description').innerHTML = categoryDescriptions[category] || '';
+
+            // Show first figure
+            showSelectedFigure();
+        }}
+
+        function showSelectedFigure() {{
+            const category = document.getElementById('viz-category').value;
+            const figIdx = document.getElementById('viz-figure').value;
+            const images = imagesData[category] || [];
+
+            if (images.length > 0 && figIdx < images.length) {{
+                const img = images[figIdx];
+                document.getElementById('viz-image').src = img.data;
+                document.getElementById('viz-caption').textContent = img.label + ' (' + img.filename + ')';
+            }} else {{
+                document.getElementById('viz-image').src = '';
+                document.getElementById('viz-caption').textContent = 'No figures available';
+            }}
+        }}
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {{
+            updateVizOptions();
+        }});
 
         // Tab switching
         document.querySelectorAll('.nav-tab').forEach(tab => {{
