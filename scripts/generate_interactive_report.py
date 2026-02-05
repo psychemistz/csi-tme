@@ -547,6 +547,7 @@ def generate_html(data):
                         <tr>
                             <th>Gene</th>
                             <th>Event Type</th>
+                            <th>Exon/Region</th>
                             <th>State 1</th>
                             <th>State 2</th>
                             <th>PSI 1</th>
@@ -745,11 +746,24 @@ def generate_html(data):
                 $('#filter-scrna-gene').append('<option value="' + g + '">' + g + '</option>');
             }});
 
+            // Function to shorten event_id to readable exon coordinates
+            function shortenEventId(eventId) {{
+                if (!eventId) return '-';
+                // Extract coordinates: chr5:83519349:83522309:+@chr5:83537007:83542268
+                // Show as: 83519349-83522309
+                const match = eventId.match(/:(\d+):(\d+):/);
+                if (match) {{
+                    return match[1] + '-' + match[2];
+                }}
+                return eventId.substring(0, 20) + '...';
+            }}
+
             scrnaTable = $('#scrnaTable').DataTable({{
                 data: scrnaResults,
                 columns: [
                     {{ data: 'gene' }},
                     {{ data: 'event_type' }},
+                    {{ data: 'event_id', render: (data, type) => type === 'display' ? '<span title=\"' + data + '\">' + shortenEventId(data) + '</span>' : data }},
                     {{ data: 'state1' }},
                     {{ data: 'state2' }},
                     {{ data: 'mean_psi_state1', render: (data) => data ? (data * 100).toFixed(1) + '%' : '-' }},
@@ -757,7 +771,7 @@ def generate_html(data):
                     {{ data: 'delta_psi', render: (data) => data ? (data * 100).toFixed(1) + '%' : '-' }},
                     {{ data: 'padj', render: (data, type) => type === 'display' ? formatPvalHtml(data) : data }}
                 ],
-                order: [[7, 'asc']],
+                order: [[8, 'asc']],
                 pageLength: 25
             }});
 
@@ -770,7 +784,7 @@ def generate_html(data):
                 if (settings.nTable.id !== 'scrnaTable') return true;
                 const minDpsi = parseFloat($('#filter-min-dpsi').val()) || 0;
                 const maxPadj = parseFloat($('#filter-max-padj').val()) || 1;
-                const dpsi = Math.abs(parseFloat(data[6])) / 100 || 0;
+                const dpsi = Math.abs(parseFloat(data[7])) / 100 || 0;  // ΔPSI is now column 7
                 const padj = parseFloat(scrnaResults[dataIndex].padj) || 1;
                 return dpsi >= minDpsi && padj <= maxPadj;
             }});
