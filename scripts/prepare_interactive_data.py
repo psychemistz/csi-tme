@@ -175,7 +175,9 @@ def main():
     val_data = dashboard_data['csv_data'].get('final_validation_report', [])
     if val_data:
         val_df = pd.DataFrame(val_data)
-        tier_counts = val_df['overall_validation'].value_counts().to_dict()
+        # Handle both old and new column names
+        tier_col = 'validation_tier' if 'validation_tier' in val_df.columns else 'overall_validation'
+        tier_counts = val_df[tier_col].value_counts().to_dict()
         dashboard_data['summary_stats']['validation'] = {
             'n_genes_tested': len(val_df),
             'tier_counts': tier_counts
@@ -270,7 +272,8 @@ def aggregate_gene_summary(csv_data):
     for row in csv_data.get('final_validation_report', []):
         gene = row.get('gene')
         if gene in gene_info:
-            gene_info[gene]['validation_tier'] = row.get('overall_validation')
+            # Handle both old and new column names
+            gene_info[gene]['validation_tier'] = row.get('validation_tier') or row.get('overall_validation')
 
     # scRNA-seq validation
     for row in csv_data.get('scrna_full_psi_differential', []):
