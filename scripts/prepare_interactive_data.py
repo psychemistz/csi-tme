@@ -224,79 +224,69 @@ def main():
 
 
 def aggregate_gene_summary(csv_data):
-    """Create gene-level summary table for main search."""
-    gene_info = defaultdict(lambda: {
-        'gene': None,
-        'ont_samples_sig': 0,
-        'ont_samples_total': 0,
-        'ont_best_pval': None,
-        'sr_samples_sig': 0,
-        'sr_samples_total': 0,
-        'sr_best_pval': None,
-        'validation_tier': None,
-        'scrna_max_delta_psi': None,
-        'scrna_best_padj': None,
-        'scrna_n_events': 0
-    })
+    """Create gene-level summary table from validation report."""
+    gene_info = []
 
-    # ONT results
-    for row in csv_data.get('ont_splisosm_full_results', []):
-        gene = row.get('gene')
-        if not gene:
-            continue
-        gene_info[gene]['gene'] = gene
-        gene_info[gene]['ont_samples_total'] += 1
-        pval = row.get('pvalue_ir')
-        if pval is not None and pval < 0.05:
-            gene_info[gene]['ont_samples_sig'] += 1
-        if pval is not None:
-            if gene_info[gene]['ont_best_pval'] is None or pval < gene_info[gene]['ont_best_pval']:
-                gene_info[gene]['ont_best_pval'] = pval
-
-    # SR results
-    for row in csv_data.get('sr_splisosm_full_results', []):
-        gene = row.get('gene')
-        if not gene:
-            continue
-        gene_info[gene]['gene'] = gene
-        gene_info[gene]['sr_samples_total'] += 1
-        # Use pvalue_ir for the new comprehensive SR results
-        pval = row.get('pvalue_ir') or row.get('pvalue')
-        if pval is not None and pval < 0.05:
-            gene_info[gene]['sr_samples_sig'] += 1
-        if pval is not None:
-            if gene_info[gene]['sr_best_pval'] is None or pval < gene_info[gene]['sr_best_pval']:
-                gene_info[gene]['sr_best_pval'] = pval
-
-    # Validation tier
+    # Use final_validation_report as the primary source (has all IR, GC, IC data)
     for row in csv_data.get('final_validation_report', []):
         gene = row.get('gene')
-        if gene in gene_info:
-            # Handle both old and new column names
-            gene_info[gene]['validation_tier'] = row.get('validation_tier') or row.get('overall_validation')
-
-    # scRNA-seq validation
-    for row in csv_data.get('scrna_full_psi_differential', []):
-        gene = row.get('gene')
         if not gene:
             continue
-        if gene not in gene_info:
-            gene_info[gene]['gene'] = gene
 
-        gene_info[gene]['scrna_n_events'] += 1
-        delta_psi = row.get('delta_psi')
-        padj = row.get('padj')
+        info = {
+            'gene': gene,
+            'validation_tier': row.get('validation_tier'),
+            'platforms': row.get('platforms'),
+            'total_samples': row.get('total_samples_tested', 0),
+            # IR stats
+            'ir_sig': row.get('total_ir_sig', 0),
+            'ir_best_pval': row.get('best_ir_pval'),
+            # GC stats
+            'gc_sig': row.get('total_gc_sig', 0),
+            'gc_best_pval': row.get('best_gc_pval'),
+            # IC stats
+            'ic_sig': row.get('total_ic_sig', 0),
+            'ic_best_pval': row.get('best_ic_pval'),
+            # ONT breakdown
+            'ont_samples_total': row.get('ont_samples_tested', 0),
+            'ont_ir_sig': row.get('ont_ir_sig', 0),
+            'ont_gc_sig': row.get('ont_gc_sig', 0),
+            'ont_ic_sig': row.get('ont_ic_sig', 0),
+            # SR breakdown
+            'sr_samples_total': row.get('sr_samples_tested', 0),
+            'sr_ir_sig': row.get('sr_ir_sig', 0),
+            'sr_gc_sig': row.get('sr_gc_sig', 0),
+            'sr_ic_sig': row.get('sr_ic_sig', 0),
+            # scRNA
+            'scrna_n_events': row.get('scrna_total_events', 0),
+            'scrna_sig_events': row.get('scrna_sig_events', 0),
+            'scrna_max_delta_psi': row.get('scrna_max_delta_psi'),
+            'scrna_best_padj': row.get('scrna_min_padj'),
+        }
+        gene_info.append(info)
 
-        if delta_psi is not None:
-            abs_delta = abs(delta_psi)
-            if gene_info[gene]['scrna_max_delta_psi'] is None or abs_delta > abs(gene_info[gene]['scrna_max_delta_psi']):
-                gene_info[gene]['scrna_max_delta_psi'] = delta_psi
+    # Add any genes from scRNA that might not be in validation report
+    validation_genes = {g['gene'] for g in gene_info}
+    for row in csv_data.get('scrna_full_psi_differential', []):
+        gene = row.get('gene')
+        if gene and gene not in validation_genes:
+            validation_genes.add(gene)
+            # Add minimal entry for scRNA-only genes
+            gene_info.append({
+                'gene': gene,
+                'validation_tier': 'TIER3_SCRNA',
+                'platforms': 'scRNA',
+                'total_samples': 0,
+                'ir_sig': 0, 'ir_best_pval': None,
+                'gc_sig': 0, 'gc_best_pval': None,
+                'ic_sig': 0, 'ic_best_pval': None,
+                'ont_samples_total': 0, 'ont_ir_sig': 0, 'ont_gc_sig': 0, 'ont_ic_sig': 0,
+                'sr_samples_total': 0, 'sr_ir_sig': 0, 'sr_gc_sig': 0, 'sr_ic_sig': 0,
+                'scrna_n_events': 0, 'scrna_sig_events': 0,
+                'scrna_max_delta_psi': None, 'scrna_best_padj': None,
+            })
 
-        if padj is not None:
-            if gene_info[gene]['scrna_best_padj'] is None or padj < gene_info[gene]['scrna_best_padj']:
-                gene_info[gene]['scrna_best_padj'] = padj
-
-    return list(gene_info.values())
+    return gene_info
 
 
 def aggregate_sample_summary(csv_data):

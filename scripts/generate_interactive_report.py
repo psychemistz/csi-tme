@@ -487,17 +487,23 @@ def generate_html(data):
                         <input type="number" id="filter-min-samples" value="0" min="0" max="13">
                     </div>
                 </div>
+                <div style="background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:15px; font-size:0.9em;">
+                    <strong>Test Statistics:</strong>
+                    <code>IR</code>=Isoform Ratio (primary),
+                    <code>GC</code>=Gene Counts (expression),
+                    <code>IC</code>=Isoform Counts (combined)
+                </div>
                 <table id="geneTable" class="display" style="width:100%">
                     <thead>
                         <tr>
                             <th>Gene</th>
-                            <th>ONT Sig</th>
-                            <th>ONT Best p</th>
-                            <th>SR Sig</th>
-                            <th>SR Best p</th>
-                            <th>Validation</th>
+                            <th>Tier</th>
+                            <th>IR Sig</th>
+                            <th>IR p-val</th>
+                            <th>GC Sig</th>
+                            <th>GC p-val</th>
+                            <th>IC Sig</th>
                             <th>scRNA ΔPSI</th>
-                            <th>scRNA padj</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -780,22 +786,22 @@ def generate_html(data):
                 data: geneSummary,
                 columns: [
                     {{ data: 'gene', render: (data, type, row) => '<a href="#" onclick="showGeneDetail(\\'' + data + '\\'); return false;">' + data + '</a>' }},
-                    {{ data: null, render: (data, type, row) => row.ont_samples_sig + '/' + row.ont_samples_total }},
-                    {{ data: 'ont_best_pval', render: (data, type) => type === 'display' ? formatPvalHtml(data) : data }},
-                    {{ data: null, render: (data, type, row) => row.sr_samples_sig + '/' + row.sr_samples_total }},
-                    {{ data: 'sr_best_pval', render: (data, type) => type === 'display' ? formatPvalHtml(data) : data }},
                     {{ data: 'validation_tier', render: (data, type) => type === 'display' ? getTierBadge(data) : data }},
-                    {{ data: 'scrna_max_delta_psi', render: (data, type) => data ? (data * 100).toFixed(1) + '%' : '-' }},
-                    {{ data: 'scrna_best_padj', render: (data, type) => type === 'display' ? formatPvalHtml(data) : data }}
+                    {{ data: null, render: (data, type, row) => row.ir_sig + '/' + row.total_samples }},
+                    {{ data: 'ir_best_pval', render: (data, type) => type === 'display' ? formatPvalHtml(data) : data }},
+                    {{ data: null, render: (data, type, row) => row.gc_sig + '/' + row.total_samples }},
+                    {{ data: 'gc_best_pval', render: (data, type) => type === 'display' ? formatPvalHtml(data) : data }},
+                    {{ data: null, render: (data, type, row) => row.ic_sig + '/' + row.total_samples }},
+                    {{ data: 'scrna_max_delta_psi', render: (data, type) => data ? (data * 100).toFixed(1) + '%' : '-' }}
                 ],
-                order: [[2, 'asc']],
+                order: [[3, 'asc']],
                 pageLength: 25
             }});
 
             // Gene table filters
             $('#filter-tier').on('change', function() {{
                 const val = this.value;
-                geneTable.column(5).search(val).draw();
+                geneTable.column(1).search(val).draw();
             }});
 
             $('#filter-min-samples').on('change', function() {{
@@ -805,9 +811,8 @@ def generate_html(data):
             $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {{
                 if (settings.nTable.id !== 'geneTable') return true;
                 const minSamples = parseInt($('#filter-min-samples').val()) || 0;
-                const ontSig = parseInt(data[1].split('/')[0]) || 0;
-                const srSig = parseInt(data[3].split('/')[0]) || 0;
-                return (ontSig + srSig) >= minSamples;
+                const irSig = parseInt(data[2].split('/')[0]) || 0;
+                return irSig >= minSamples;
             }});
         }});
 
@@ -938,27 +943,50 @@ def generate_html(data):
 
             let html = '<h4>Summary</h4>';
             html += '<p><strong>Validation Tier:</strong> ' + getTierBadge(geneData?.validation_tier) + '</p>';
-            html += '<p><strong>ONT:</strong> ' + (geneData?.ont_samples_sig || 0) + '/' + (geneData?.ont_samples_total || 0) + ' samples significant</p>';
-            html += '<p><strong>SR:</strong> ' + (geneData?.sr_samples_sig || 0) + '/' + (geneData?.sr_samples_total || 0) + ' samples significant</p>';
+            html += '<p><strong>Platforms:</strong> ' + (geneData?.platforms || '-') + '</p>';
 
+            // Statistics summary table
+            html += '<h4>Spatial Statistics (ONT + SR combined)</h4>';
+            html += '<table class="display compact"><thead><tr><th>Test</th><th>Significant</th><th>Best p-value</th></tr></thead><tbody>';
+            html += '<tr><td><strong>HSIC-IR</strong> (Isoform Ratio)</td><td>' + (geneData?.ir_sig || 0) + '/' + (geneData?.total_samples || 0) + '</td><td>' + formatPvalHtml(geneData?.ir_best_pval) + '</td></tr>';
+            html += '<tr><td><strong>HSIC-GC</strong> (Gene Counts)</td><td>' + (geneData?.gc_sig || 0) + '/' + (geneData?.total_samples || 0) + '</td><td>' + formatPvalHtml(geneData?.gc_best_pval) + '</td></tr>';
+            html += '<tr><td><strong>HSIC-IC</strong> (Isoform Counts)</td><td>' + (geneData?.ic_sig || 0) + '/' + (geneData?.total_samples || 0) + '</td><td>' + formatPvalHtml(geneData?.ic_best_pval) + '</td></tr>';
+            html += '</tbody></table>';
+
+            // Platform breakdown
+            if (geneData?.ont_samples_total > 0 || geneData?.sr_samples_total > 0) {{
+                html += '<h4>Platform Breakdown</h4>';
+                html += '<table class="display compact"><thead><tr><th>Platform</th><th>Samples</th><th>IR Sig</th><th>GC Sig</th><th>IC Sig</th></tr></thead><tbody>';
+                if (geneData?.ont_samples_total > 0) {{
+                    html += '<tr><td>ONT</td><td>' + geneData.ont_samples_total + '</td><td>' + (geneData.ont_ir_sig || 0) + '</td><td>' + (geneData.ont_gc_sig || 0) + '</td><td>' + (geneData.ont_ic_sig || 0) + '</td></tr>';
+                }}
+                if (geneData?.sr_samples_total > 0) {{
+                    html += '<tr><td>SR</td><td>' + geneData.sr_samples_total + '</td><td>' + (geneData.sr_ir_sig || 0) + '</td><td>' + (geneData.sr_gc_sig || 0) + '</td><td>' + (geneData.sr_ic_sig || 0) + '</td></tr>';
+                }}
+                html += '</tbody></table>';
+            }}
+
+            // Per-sample ONT results
             if (ontGeneResults.length > 0) {{
-                html += '<h4>ONT Results</h4><table class="display compact"><thead><tr><th>Sample</th><th>Isoforms</th><th>HSIC-IR p</th></tr></thead><tbody>';
+                html += '<h4>ONT Per-Sample Results</h4><table class="display compact"><thead><tr><th>Sample</th><th>Isoforms</th><th>IR p</th><th>GC p</th><th>IC p</th></tr></thead><tbody>';
+                ontGeneResults.sort((a,b) => (a.pvalue_ir || 1) - (b.pvalue_ir || 1));
                 ontGeneResults.forEach(r => {{
-                    html += '<tr><td>' + r.sample_id + '</td><td>' + r.n_isoforms + '</td><td>' + formatPvalHtml(r.pvalue_ir) + '</td></tr>';
+                    html += '<tr><td>' + r.sample_id + '</td><td>' + r.n_isoforms + '</td><td>' + formatPvalHtml(r.pvalue_ir) + '</td><td>' + formatPvalHtml(r.pvalue_gc) + '</td><td>' + formatPvalHtml(r.pvalue_ic) + '</td></tr>';
                 }});
                 html += '</tbody></table>';
             }}
 
+            // Per-sample SR results
             if (srGeneResults.length > 0) {{
-                html += '<h4>SR Results</h4><table class="display compact"><thead><tr><th>Sample</th><th>Isoforms</th><th>HSIC-IR p</th><th>HSIC-GC p</th></tr></thead><tbody>';
+                html += '<h4>SR Per-Sample Results</h4><table class="display compact"><thead><tr><th>Sample</th><th>Isoforms</th><th>IR p</th><th>GC p</th><th>IC p</th></tr></thead><tbody>';
+                srGeneResults.sort((a,b) => (a.pvalue_ir || 1) - (b.pvalue_ir || 1));
                 srGeneResults.forEach(r => {{
-                    const pval_ir = r.pvalue_ir || r.pvalue;
-                    const pval_gc = r.pvalue_gc;
-                    html += '<tr><td>' + r.sample + '</td><td>' + r.n_isoforms + '</td><td>' + formatPvalHtml(pval_ir) + '</td><td>' + formatPvalHtml(pval_gc) + '</td></tr>';
+                    html += '<tr><td>' + r.sample + '</td><td>' + r.n_isoforms + '</td><td>' + formatPvalHtml(r.pvalue_ir) + '</td><td>' + formatPvalHtml(r.pvalue_gc) + '</td><td>' + formatPvalHtml(r.pvalue_ic) + '</td></tr>';
                 }});
                 html += '</tbody></table>';
             }}
 
+            // scRNA results
             if (scrnaGeneResults.length > 0) {{
                 html += '<h4>Top scRNA-seq Events</h4><table class="display compact"><thead><tr><th>States</th><th>ΔPSI</th><th>padj</th></tr></thead><tbody>';
                 scrnaGeneResults.forEach(r => {{
