@@ -784,7 +784,7 @@ def generate_html(data):
         $(document).ready(function() {{
             const tierCounts = {{}};
             validationData.forEach(row => {{
-                const tier = row.overall_validation || 'Unknown';
+                const tier = row.validation_tier || row.overall_validation || 'Unknown';
                 tierCounts[tier] = (tierCounts[tier] || 0) + 1;
             }});
 
