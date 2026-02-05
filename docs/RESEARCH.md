@@ -112,29 +112,36 @@ Ran SPLISOSM HSIC-IR on 11 Visium-ONT glioma samples (6 GBM + 5 DMG) focusing on
 
 ### scRNA-seq Validation Complete (2026-02-04)
 
-Cross-validated HSIC-IR candidates against scRNA-seq differential splicing data (Zenodo 17055113: 32,304 cells, MARVEL PSI analysis).
+Cross-validated HSIC-IR candidates against scRNA-seq differential splicing data (Zenodo 17055113: 32,304 cells, MARVEL PSI analysis). Extracted PSI values for all candidate genes and ran Wilcoxon tests across 16 cell states.
 
-**Validation Results:**
+**Full Validation Results (194 significant events, |ΔPSI| > 10%, padj < 0.05):**
 
-| Gene | ONT HSIC-IR | scRNA-seq Diff. Splicing | Validation |
-|------|-------------|--------------------------|------------|
-| **APP** | Not sig (low expr) | ΔPSI=55%, p=8.6e-52 | ✅ scRNA-seq |
-| **VCAN** | 3/9 sig (33%) | ΔPSI=64%, p=2.5e-11 | ✅ Both |
-| **CLU** | 11/11 sig (100%) | 118 events, no diff. | Spatial only |
-| **B2M** | 11/11 sig (100%) | 11 events, no diff. | Spatial only |
-| **CD74** | 8/10 sig (80%) | 94 events, no diff. | Spatial only |
-| **MIF** | 9/11 sig (82%) | 1 event, no diff. | Spatial only |
+| Gene | ONT HSIC-IR | scRNA-seq Events | Max ΔPSI | Best p-value | Validation |
+|------|-------------|------------------|----------|--------------|------------|
+| **VCAN** | 3/9 sig (33%) | 45 events | 99.3% | 1.4e-180 | ✅ STRONG |
+| **APP** | 0/3 sig (low expr) | 65 events | 66.9% | 8.6e-52 | ✅ STRONG |
+| **HMGB1** | 0/3 sig (low expr) | 39 events | 96.4% | 1.2e-38 | ✅ STRONG |
+| **CLU** | 11/11 sig (100%) | 26 events | 19.5% | 4.4e-38 | ✅ STRONG |
+| **SPP1** | 3/9 sig (33%) | 9 events | 27.7% | 1.8e-05 | ✅ STRONG |
+| **LGALS3** | 2/6 sig (33%) | 3 events | 16.0% | 2.6e-12 | ✅ MODERATE |
+| **CD74** | 8/10 sig (80%) | 4 events | 83.0% | 5.7e-07 | ✅ MODERATE |
+| **SPARCL1** | 4/11 sig (36%) | 3 events | 13.8% | 4.4e-04 | ✅ MODERATE |
+| **B2M** | 11/11 sig (100%) | 0 events | - | - | Spatial only |
+| **MIF** | 9/11 sig (82%) | 0 events | - | - | Spatial only |
+| **PTGDS** | 6/8 sig (75%) | 0 events | - | - | Spatial only |
 
 **Key Findings:**
-- **APP**: Strong scRNA-seq validation (MES vs NPC: ΔPSI=-55%) despite low ONT expression
-- **VCAN**: Validated in both modalities - spatial patterns correlate with tumor state splicing
-- **CLU, B2M, CD74, MIF**: Highly reproducible spatial patterns (>80% samples) but no tumor-state-specific splicing in scRNA-seq. Suggests **microenvironment-driven** rather than cell-intrinsic regulation.
+- **8 of 22 candidates validated** in scRNA-seq differential splicing
+- **VCAN**: Massive isoform switching (ΔPSI=99%) between Macrophages and tumor cells
+- **APP**: Strong differential splicing between tumor states (MES vs NPC: ΔPSI=-55%)
+- **HMGB1**: Large effects (ΔPSI=96%) including ALE events between T cells and tumor cells
+- **CLU, SPP1, CD74**: Cross-validated in both spatial and single-cell modalities
+- **B2M, MIF, PTGDS**: Highly reproducible spatial patterns (>75% samples) but no cell-type splicing differences - suggests **microenvironment-driven** regulation
 
 **Source Data**: All validation results saved as CSV files in `reports/`:
-- `final_validation_report.csv`: Integrated validation summary
+- `scrna_full_psi_differential.csv`: All 3,375 pairwise comparisons
+- `scrna_validation_corrected.csv`: Gene-level validation summary
 - `candidate_validation_summary.csv`: ONT HSIC-IR results by gene
-- `scrna_wilcox_diff_20_gene_short_name.csv`: scRNA-seq differential splicing
-- `scrna_splice_feature_gene_short_name.csv`: All splice events for candidates
 
 ### Next Steps
 
