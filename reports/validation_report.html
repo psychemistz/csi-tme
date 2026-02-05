@@ -147,6 +147,15 @@
             color: #2980b9;
             margin-top: 0;
         }
+        .test-badge {
+            display: inline-block;
+            background-color: #9b59b6;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -157,13 +166,13 @@
 
         <div class="summary-box">
             <h3>Executive Summary</h3>
-            <p>This report presents spatial isoform analysis results from SPLISOSM on Visium ONT glioma data, with validation using an independent scRNA-seq dataset (32,304 cells). Analysis of 26 SecAct target genes across 11 ONT samples identified 20 genes with significant spatial isoform variation. Two genes (APP, VCAN) were successfully validated in scRNA-seq.</p>
+            <p>This report presents spatial isoform analysis results from SPLISOSM on Visium ONT glioma data, with validation using an independent scRNA-seq dataset (32,304 cells). Using the <strong>HSIC-IR</strong> (Isoform Ratio) test, analysis of 26 SecAct target genes across 11 ONT samples identified 20 genes with significant spatial isoform variation. Two genes (APP, VCAN) were successfully validated in scRNA-seq.</p>
         </div>
 
         <div class="stats">
             <div class="stat-box">
                 <div class="stat-number">20</div>
-                <div class="stat-label">Significant Genes</div>
+                <div class="stat-label">Significant Genes (HSIC-IR)</div>
             </div>
             <div class="stat-box">
                 <div class="stat-number">11</div>
@@ -175,7 +184,7 @@
             </div>
             <div class="stat-box">
                 <div class="stat-number">5.1e-74</div>
-                <div class="stat-label">Best p-value</div>
+                <div class="stat-label">Best p-value (HSIC-IR)</div>
             </div>
         </div>
     </div>
@@ -190,7 +199,7 @@
             <tr><td>Platform</td><td>Visium + Oxford Nanopore (long-read)</td></tr>
             <tr><td>Samples</td><td>11 glioma samples (5 DMG, 6 GBM)</td></tr>
             <tr><td>Genes Tested</td><td>26 SecAct targets with 2+ isoforms</td></tr>
-            <tr><td>Analysis</td><td>HSIC-IR (isoform ratio spatial variation)</td></tr>
+            <tr><td>Primary Test</td><td><span class="test-badge">HSIC-IR</span> (Isoform Ratio spatial variation)</td></tr>
         </table>
 
         <h3>Validation Dataset (scRNA-seq)</h3>
@@ -202,16 +211,24 @@
             <tr><td>Cells</td><td>32,304 total (17,918 tumor, 7,064 T cells, 4,312 macrophages)</td></tr>
             <tr><td>Splicing Tool</td><td>MARVEL (PSI quantification)</td></tr>
         </table>
+
+        <h3>SPLISOSM Test Statistics</h3>
+        <table>
+            <tr><th>Test</th><th>Abbreviation</th><th>Detects</th><th>Use Case</th></tr>
+            <tr><td><strong>HSIC-IR</strong></td><td>Isoform Ratio</td><td>Spatial isoform switching independent of expression</td><td><strong>Primary test for this analysis</strong></td></tr>
+            <tr><td>HSIC-GC</td><td>Gene Counts</td><td>Spatially variable gene expression</td><td>SVG detection</td></tr>
+            <tr><td>HSIC-IC</td><td>Isoform Counts</td><td>Combined expression + composition</td><td>Initial screening</td></tr>
+        </table>
     </div>
 
     <div class="container">
         <h2>2. ONT SPLISOSM Results Summary</h2>
 
         <div class="new-results">
-            <h3>Top Spatially Variable Genes (SecAct Targets)</h3>
-            <p>Analysis of 26 SecAct target genes across 11 Visium ONT samples:</p>
+            <h3>Top Spatially Variable Genes - <span class="test-badge">HSIC-IR</span> Test</h3>
+            <p>Analysis of 26 SecAct target genes across 11 Visium ONT samples. Significance determined by <strong>HSIC-IR p-value < 0.05</strong>:</p>
             <table>
-                <tr><th>Gene</th><th>Reproducibility</th><th>Best p-value</th><th>Best Sample</th><th>Function</th></tr>
+                <tr><th>Gene</th><th>Reproducibility</th><th>Best HSIC-IR p-value</th><th>Best Sample</th><th>Function</th></tr>
                 <tr><td><strong>B2M</strong></td><td>11/11 (100%)</td><td>1.7e-67</td><td>GBM_1</td><td>MHC-I component</td></tr>
                 <tr><td><strong>CLU</strong></td><td>11/11 (100%)</td><td>5.1e-74</td><td>GBM_1</td><td>Stress response chaperone</td></tr>
                 <tr><td><strong>MIF</strong></td><td>9/11 (82%)</td><td>2.2e-21</td><td>GBM_3</td><td>Macrophage migration factor</td></tr>
@@ -230,12 +247,12 @@
         <h2>3. APP (Amyloid Precursor Protein) Validation</h2>
 
         <div class="key-finding">
-            <strong>Key Finding:</strong> APP exon 7/8 inclusion shows dramatic differences between tumor states, with mesenchymal-like cells showing high inclusion (82%) and neural progenitor-like cells showing low inclusion (27%).
+            <strong>Key Finding:</strong> APP exon 7/8 inclusion shows dramatic differences between tumor states, with mesenchymal-like cells showing high inclusion (82%) and neural progenitor-like cells showing low inclusion (27%). Spatial variation detected by <span class="test-badge">HSIC-IR</span>.
         </div>
 
-        <h3>Visium ONT Results</h3>
+        <h3>Visium SR Results - <span class="test-badge">HSIC-IR</span></h3>
         <table>
-            <tr><th>Sample</th><th>Isoforms</th><th>HSIC-IR p-value</th><th>Significant</th></tr>
+            <tr><th>Sample</th><th>Isoforms</th><th>HSIC-IR p-value</th><th>Significant (IR)</th></tr>
             <tr><td>ZH916bulk</td><td>3</td><td>5.72e-28</td><td class="validated">YES</td></tr>
             <tr><td>ZH881T1</td><td>2</td><td>4.51e-12</td><td class="validated">YES</td></tr>
             <tr><td>ZH1007inf</td><td>3</td><td>1.55e-05</td><td class="validated">YES</td></tr>
@@ -259,8 +276,8 @@
         <p><strong>Statistical Test:</strong> Tumor_MES vs Tumor_NPC: ΔPSI = 55.2%, p = 8.57e-52 (Wilcoxon)</p>
 
         <div class="figure-container">
-            <img src="fig1_psi_by_tumor_state.png" alt="APP PSI by Tumor State">
-            <div class="figure-caption">Figure 1: APP exon 7/8 inclusion (PSI) varies dramatically between tumor cell states. Mesenchymal (MES) cells show high inclusion (82%), while neural progenitor-like (NPC) cells show low inclusion (27%). Error bars show standard deviation.</div>
+            <img src="fig1_app_psi_by_tumor_state.png" alt="APP PSI by Tumor State">
+            <div class="figure-caption">Figure 1: APP exon 7/8 inclusion (PSI) varies dramatically between tumor cell states in scRNA-seq validation. Mesenchymal (MES) cells show high inclusion (82%), while neural progenitor-like (NPC) cells show low inclusion (27%). This cell-state-dependent splicing underlies the spatial patterns detected by HSIC-IR in Visium.</div>
         </div>
 
         <div class="interpretation-box">
@@ -270,7 +287,7 @@
                 <li><strong>APP695</strong> (exons 7/8 skipped) - Neural-specific, lacks KPI domain</li>
                 <li><strong>APP751/770</strong> (exons 7/8 included) - Non-neural, contains KPI (Kunitz Protease Inhibitor) domain</li>
             </ul>
-            <p><strong>Spatial implication:</strong> Regions enriched for neural progenitor-like tumor cells (NPC state) will have lower APP exon inclusion, while mesenchymal-rich regions will have higher inclusion. This creates detectable spatial isoform gradients in Visium.</p>
+            <p><strong>Spatial implication:</strong> Regions enriched for neural progenitor-like tumor cells (NPC state) will have lower APP exon inclusion, while mesenchymal-rich regions will have higher inclusion. This creates detectable spatial isoform gradients detected by HSIC-IR.</p>
         </div>
     </div>
 
@@ -278,12 +295,12 @@
         <h2>4. VCAN (Versican) Validation</h2>
 
         <div class="key-finding">
-            <strong>Key Finding:</strong> VCAN GAG-domain exon inclusion differs by 64% between mesenchymal (14%) and OPC-lineage (78%) tumor states, supporting spatial isoform variation in Visium.
+            <strong>Key Finding:</strong> VCAN GAG-domain exon inclusion differs by 64% between mesenchymal (14%) and OPC-lineage (78%) tumor states. Spatial variation detected by <span class="test-badge">HSIC-IR</span>.
         </div>
 
-        <h3>Visium ONT Results</h3>
+        <h3>Visium SR Results - <span class="test-badge">HSIC-IR</span></h3>
         <table>
-            <tr><th>Sample</th><th>Isoforms</th><th>HSIC-IR p-value</th><th>Significant</th></tr>
+            <tr><th>Sample</th><th>Isoforms</th><th>HSIC-IR p-value</th><th>Significant (IR)</th></tr>
             <tr><td>ZH1019T1</td><td>7</td><td>3.65e-19</td><td class="validated">YES</td></tr>
             <tr><td>ZH1019inf</td><td>10</td><td>4.58e-12</td><td class="validated">YES</td></tr>
             <tr><td>ZH1007inf</td><td>8</td><td>5.81e-04</td><td class="validated">YES</td></tr>
@@ -308,8 +325,8 @@
         <p><strong>Statistical Test:</strong> Tumor_MES vs Tumor_OPC_OL: ΔPSI = 64.1%, p = 2.51e-11 (Wilcoxon)</p>
 
         <div class="figure-container">
-            <img src="fig2_visium_significance.png" alt="VCAN PSI by Tumor State">
-            <div class="figure-caption">Figure 2: VCAN GAG-domain exon inclusion differs dramatically between tumor states. OPC-lineage cells (OPC_OL: 78%, AC: 80%) show high inclusion, while mesenchymal cells show low inclusion (14%).</div>
+            <img src="fig2_vcan_psi_by_tumor_state.png" alt="VCAN PSI by Tumor State">
+            <div class="figure-caption">Figure 2: VCAN GAG-domain exon inclusion (PSI) varies between tumor cell states in scRNA-seq validation. OPC-lineage cells (OPC_OL: 78%, AC: 80%) show high inclusion, while mesenchymal cells show low inclusion (14%). This cell-state-dependent splicing underlies the spatial patterns detected by HSIC-IR in Visium.</div>
         </div>
 
         <div class="interpretation-box">
@@ -329,12 +346,12 @@
         <h2>5. CLU (Clusterin) Analysis</h2>
 
         <div class="key-finding">
-            <strong>Key Finding:</strong> CLU shows the strongest and most reproducible spatial isoform variation, significant in ALL 11 samples (100%). However, scRNA-seq validation is inconclusive due to low splicing variability in SMART-seq2 data, possibly because novel ONT-detected isoforms are not captured.
+            <strong>Key Finding:</strong> CLU shows the strongest and most reproducible spatial isoform variation by <span class="test-badge">HSIC-IR</span>, significant in ALL 11 samples (100%). However, scRNA-seq validation is inconclusive due to low splicing variability in SMART-seq2 data, possibly because novel ONT-detected isoforms are not captured.
         </div>
 
-        <h3>Visium ONT Results</h3>
+        <h3>Visium ONT Results - <span class="test-badge">HSIC-IR</span></h3>
         <table>
-            <tr><th>Sample</th><th>Type</th><th>Isoforms</th><th>Spots</th><th>HSIC-IR p-value</th><th>Significant</th></tr>
+            <tr><th>Sample</th><th>Type</th><th>Isoforms</th><th>Spots</th><th>HSIC-IR p-value</th><th>Significant (IR)</th></tr>
             <tr><td>GBM_1</td><td>GBM</td><td>7</td><td>4345</td><td>5.13e-74</td><td class="validated">YES</td></tr>
             <tr><td>DMG_2</td><td>DMG</td><td>10</td><td>1038</td><td>7.53e-58</td><td class="validated">YES</td></tr>
             <tr><td>DMG_1</td><td>DMG</td><td>8</td><td>3704</td><td>1.60e-40</td><td class="validated">YES</td></tr>
@@ -348,6 +365,11 @@
             <tr><td>GBM_6</td><td>GBM</td><td>8</td><td>1510</td><td>1.56e-02</td><td class="validated">YES</td></tr>
         </table>
 
+        <div class="figure-container">
+            <img src="fig3_clu_visium_hsic_ir.png" alt="CLU HSIC-IR Significance">
+            <div class="figure-caption">Figure 3: CLU spatial isoform variation significance (-log10 p-value) across all 11 ONT samples using the HSIC-IR test. All samples show significant spatial variation (p < 0.05). Red bars = GBM samples, Blue bars = DMG samples.</div>
+        </div>
+
         <h3>ONT Isoform Discovery</h3>
         <p>CLU shows 7-10 isoforms per sample, including both known (CLU-201, CLU-208, CLU-215) and novel (CLU_Iso_1-5) isoforms:</p>
         <table>
@@ -358,11 +380,6 @@
             <tr><td>CLU_Iso_2 (truncated)</td><td>Novel</td><td>11.9%</td><td>12.5%</td><td style="color:green">↑5%</td></tr>
             <tr><td>CLU_Iso_3 (truncated)</td><td>Novel</td><td>16.6%</td><td>18.1%</td><td style="color:green">↑9%</td></tr>
         </table>
-
-        <div class="figure-container">
-            <img src="fig3_clu_isoforms.png" alt="CLU Isoforms">
-            <div class="figure-caption">Figure 3: CLU isoform usage differs between tumor and immune-infiltrated regions. Novel isoforms (5'-truncated) are more prevalent in infiltrated regions, while the canonical secreted form (CLU-201) is enriched in tumor cores.</div>
-        </div>
 
         <div class="warning">
             <strong>Validation Status:</strong> CLU could not be validated in scRNA-seq due to low splicing variability (max SD = 0.18). This is likely because the novel truncated isoforms detected by ONT long-read sequencing are not captured by SMART-seq2 3'-biased methods.
@@ -377,13 +394,13 @@
     </div>
 
     <div class="container">
-        <h2>6. Additional Significant Genes</h2>
+        <h2>6. Additional Significant Genes - <span class="test-badge">HSIC-IR</span></h2>
 
-        <p>Beyond APP, VCAN, and CLU, several other SecAct targets show strong spatial isoform variation:</p>
+        <p>Beyond APP, VCAN, and CLU, several other SecAct targets show strong spatial isoform variation by HSIC-IR:</p>
 
         <h3>Immune-Related Genes</h3>
         <table>
-            <tr><th>Gene</th><th>Samples Sig</th><th>Best p-value</th><th>Isoforms</th><th>Function</th></tr>
+            <tr><th>Gene</th><th>Samples Sig (HSIC-IR)</th><th>Best HSIC-IR p-value</th><th>Isoforms</th><th>Function</th></tr>
             <tr><td><strong>B2M</strong></td><td>11/11</td><td>1.7e-67</td><td>4-6</td><td>Beta-2-microglobulin, MHC-I presentation</td></tr>
             <tr><td><strong>CD74</strong></td><td>8/11</td><td>5.5e-38</td><td>4-13</td><td>MHC-II invariant chain, antigen processing</td></tr>
             <tr><td><strong>MIF</strong></td><td>9/11</td><td>2.2e-21</td><td>2-4</td><td>Macrophage migration inhibitory factor</td></tr>
@@ -392,7 +409,7 @@
 
         <h3>ECM/Stress Response Genes</h3>
         <table>
-            <tr><th>Gene</th><th>Samples Sig</th><th>Best p-value</th><th>Isoforms</th><th>Function</th></tr>
+            <tr><th>Gene</th><th>Samples Sig (HSIC-IR)</th><th>Best HSIC-IR p-value</th><th>Isoforms</th><th>Function</th></tr>
             <tr><td><strong>TIMP1</strong></td><td>6/11</td><td>3.3e-16</td><td>2-6</td><td>Tissue inhibitor of metalloproteinases</td></tr>
             <tr><td><strong>SPARCL1</strong></td><td>4/11</td><td>2.3e-20</td><td>3-10</td><td>ECM glycoprotein</td></tr>
             <tr><td><strong>CST3</strong></td><td>6/11</td><td>2.4e-24</td><td>2</td><td>Cystatin C, protease inhibitor</td></tr>
@@ -406,7 +423,7 @@
         <table>
             <tr>
                 <th>Gene</th>
-                <th>Visium ONT</th>
+                <th>Visium (HSIC-IR)</th>
                 <th>scRNA-seq</th>
                 <th>Concordance</th>
                 <th>Status</th>
@@ -450,9 +467,10 @@
 
         <h3>Key Conclusions</h3>
         <ol>
+            <li><strong>HSIC-IR detects true isoform switching</strong> - independent of expression changes, identifying genes with spatial splicing variation.</li>
             <li><strong>APP and VCAN isoform variation is cell-state-dependent</strong> - different tumor states have distinct splicing programs that create spatial gradients in tissue.</li>
-            <li><strong>CLU and B2M show universal spatial variation</strong> - significant in all 11 samples, suggesting fundamental spatial regulation in glioma TME.</li>
-            <li><strong>Immune-related genes prominent</strong> - B2M, CD74, MIF, LGALS1 all show strong patterns, suggesting spatial immune niche regulation.</li>
+            <li><strong>CLU and B2M show universal spatial variation</strong> - significant by HSIC-IR in all 11 samples, suggesting fundamental spatial regulation in glioma TME.</li>
+            <li><strong>Immune-related genes prominent</strong> - B2M, CD74, MIF, LGALS1 all show strong HSIC-IR patterns, suggesting spatial immune niche regulation.</li>
             <li><strong>Novel isoforms detected by ONT</strong> (e.g., CLU truncated forms) may require alternative validation strategies beyond SMART-seq2.</li>
         </ol>
     </div>
@@ -463,10 +481,11 @@
         <h3>Visium ONT Analysis (Discovery)</h3>
         <ul>
             <li><strong>Tool:</strong> SPLISOSM (Spatial Isoform Statistical Omnibus Model)</li>
-            <li><strong>Statistic:</strong> HSIC-IR (Hilbert-Schmidt Independence Criterion for Isoform Ratio)</li>
+            <li><strong>Primary Statistic:</strong> <span class="test-badge">HSIC-IR</span> (Hilbert-Schmidt Independence Criterion for Isoform Ratio)</li>
             <li><strong>Kernel:</strong> Full-rank ICAR spatial kernel (k=15 neighbors, ρ=0.99)</li>
             <li><strong>P-value:</strong> Liu's chi-squared moment matching</li>
             <li><strong>Targets:</strong> 26 SecAct genes with 2+ isoforms detected</li>
+            <li><strong>Significance threshold:</strong> HSIC-IR p-value < 0.05</li>
         </ul>
 
         <h3>scRNA-seq Analysis (Validation)</h3>
