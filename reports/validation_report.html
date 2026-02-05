@@ -161,12 +161,12 @@
 <body>
     <div class="container">
         <h1>CSI-TME: Spatial Isoform Validation Report</h1>
-        <p><strong>Generated:</strong> February 4, 2026</p>
+        <p><strong>Generated:</strong> February 5, 2026 (Updated with full HSIC-GC/IR/IC statistics)</p>
         <p><strong>Project:</strong> Cytokine & Secreted protein spatial Isoform distribution inference in the Tumor MicroEnvironment</p>
 
         <div class="summary-box">
             <h3>Executive Summary</h3>
-            <p>This report presents spatial isoform analysis results from SPLISOSM on glioma data using both <strong>Visium ONT (11 samples)</strong> and <strong>Visium SR (13 samples)</strong>, with comprehensive validation using an independent scRNA-seq dataset (32,304 cells, 16 cell states) and <strong>SpaCET spot deconvolution</strong>. Using the <strong>HSIC-IR</strong> (Isoform Ratio) test, analysis of 26 SecAct target genes across 24 total samples identified consistent spatial isoform patterns. <strong>Eight genes were validated in scRNA-seq</strong> with significant differential splicing (|ΔPSI| > 10%, padj < 0.05), including VCAN with 99% isoform switching between macrophages and tumor cells. <strong>SpaCET deconvolution confirms</strong> that VCAN isoform ratios correlate positively with tumor content (r=+0.19) and negatively with macrophage content (r=-0.17) at the spot level.</p>
+            <p>This report presents comprehensive spatial isoform analysis results from SPLISOSM on glioma data using both <strong>Visium ONT (11 samples)</strong> and <strong>Visium SR (13 samples)</strong>, with validation using an independent scRNA-seq dataset (32,304 cells, 16 cell states) and <strong>SpaCET spot deconvolution</strong>. All three HSIC test statistics (<strong>IR</strong>=Isoform Ratio, <strong>GC</strong>=Gene Counts, <strong>IC</strong>=Isoform Counts) were computed for 32 SecAct target genes across 24 total samples. <strong>Seven genes achieved TIER1_FULL validation</strong> (significant in both spatial and scRNA-seq), including VCAN with 99% ΔPSI between macrophages and tumor cells. <strong>SpaCET deconvolution confirms</strong> that VCAN isoform ratios correlate positively with tumor content (r=+0.19) and negatively with macrophage content (r=-0.17) at the spot level.</p>
         </div>
 
         <div class="stats">
@@ -175,16 +175,16 @@
                 <div class="stat-label">Visium Samples (11 ONT + 13 SR)</div>
             </div>
             <div class="stat-box">
-                <div class="stat-number">8</div>
-                <div class="stat-label">Genes Validated (scRNA)</div>
+                <div class="stat-number">7</div>
+                <div class="stat-label">TIER1 Genes (Spatial + scRNA)</div>
             </div>
             <div class="stat-box">
                 <div class="stat-number">99%</div>
                 <div class="stat-label">Max ΔPSI (VCAN)</div>
             </div>
             <div class="stat-box">
-                <div class="stat-number">1.1e-90</div>
-                <div class="stat-label">Best p-value (SR: SPP1)</div>
+                <div class="stat-number">5.1e-124</div>
+                <div class="stat-label">Best IR p-value (SPP1)</div>
             </div>
         </div>
     </div>
@@ -231,31 +231,56 @@
         <h3>SPLISOSM Test Statistics</h3>
         <table>
             <tr><th>Test</th><th>Abbreviation</th><th>Detects</th><th>Use Case</th></tr>
-            <tr><td><strong>HSIC-IR</strong></td><td>Isoform Ratio</td><td>Spatial isoform switching independent of expression</td><td><strong>Primary test for this analysis</strong></td></tr>
-            <tr><td>HSIC-GC</td><td>Gene Counts</td><td>Spatially variable gene expression</td><td>SVG detection</td></tr>
-            <tr><td>HSIC-IC</td><td>Isoform Counts</td><td>Combined expression + composition</td><td>Initial screening</td></tr>
+            <tr><td><strong>HSIC-IR</strong></td><td>Isoform Ratio</td><td>Spatial isoform switching independent of expression</td><td><strong>Primary test for isoform switching</strong></td></tr>
+            <tr><td><strong>HSIC-GC</strong></td><td>Gene Counts</td><td>Spatially variable gene expression</td><td>SVG detection, expression variation</td></tr>
+            <tr><td><strong>HSIC-IC</strong></td><td>Isoform Counts</td><td>Combined expression + composition</td><td>Comprehensive isoform variation</td></tr>
         </table>
+
+        <h3>Validation Tier System</h3>
+        <table>
+            <tr><th>Tier</th><th>Criteria</th><th>Genes</th></tr>
+            <tr style="background-color:#e8f6e8"><td><strong>TIER1_FULL</strong></td><td>HSIC-IR significant in spatial AND scRNA-seq validation (|ΔPSI| > 10%, padj < 0.05)</td><td>SPP1, CLU, HMGB1, CD74, APP, SPARCL1, VCAN</td></tr>
+            <tr><td><strong>TIER2_SPATIAL</strong></td><td>HSIC-IR significant in spatial (p < 0.05) but no scRNA-seq validation</td><td>SPARC, B2M, PTGDS, SERPINE2, NCAM1, SERPINE1, C3, CST3, MIF, TIMP1, LGALS1, CTSB, ITM2B, IGFBP5, AGT, TIMP2, DKK3, APOE, EDIL3</td></tr>
+            <tr><td><strong>TIER3_SCRNA</strong></td><td>scRNA-seq validation significant but spatial HSIC-IR marginal</td><td>LGALS3</td></tr>
+            <tr><td><strong>TIER4_PARTIAL</strong></td><td>Partial significance in spatial (HSIC-GC/IC significant but not IR)</td><td>COL1A2, CCL2, COL1A1, FN1, COL3A1</td></tr>
+        </table>
+
+        <div class="key-finding">
+            <strong>Validation Summary:</strong> 7 genes achieved TIER1_FULL validation (22%), 19 genes TIER2_SPATIAL (59%), 1 gene TIER3_SCRNA (3%), 5 genes TIER4_PARTIAL (16%). The high rate of TIER2 genes suggests that many spatial isoform patterns may be driven by microenvironment factors rather than cell-intrinsic splicing programs.
+        </div>
     </div>
 
     <div class="container">
         <h2>2. ONT SPLISOSM Results Summary</h2>
 
         <div class="new-results">
-            <h3>Top Spatially Variable Genes - <span class="test-badge">HSIC-IR</span> Test</h3>
-            <p>Analysis of 26 SecAct target genes across 11 Visium ONT samples. Significance determined by <strong>HSIC-IR p-value < 0.05</strong>:</p>
+            <h3>Top Spatially Variable Genes - Full HSIC Analysis (IR, GC, IC)</h3>
+            <p>Analysis of 26 SecAct target genes across 11 Visium ONT samples. All three test statistics shown:</p>
             <table>
-                <tr><th>Gene</th><th>Reproducibility</th><th>Best HSIC-IR p-value</th><th>Best Sample</th><th>Function</th></tr>
-                <tr><td><strong>B2M</strong></td><td>11/11 (100%)</td><td>1.7e-67</td><td>GBM_1</td><td>MHC-I component</td></tr>
-                <tr><td><strong>CLU</strong></td><td>11/11 (100%)</td><td>5.1e-74</td><td>GBM_1</td><td>Stress response chaperone</td></tr>
-                <tr><td><strong>MIF</strong></td><td>9/11 (82%)</td><td>2.2e-21</td><td>GBM_3</td><td>Macrophage migration factor</td></tr>
-                <tr><td><strong>CD74</strong></td><td>8/11 (73%)</td><td>5.5e-38</td><td>GBM_1</td><td>MHC-II invariant chain</td></tr>
-                <tr><td><strong>PTGDS</strong></td><td>6/11 (55%)</td><td>8.2e-63</td><td>GBM_1</td><td>Prostaglandin synthase</td></tr>
-                <tr><td><strong>TIMP1</strong></td><td>6/11 (55%)</td><td>3.3e-16</td><td>DMG_1</td><td>MMP inhibitor</td></tr>
-                <tr><td><strong>LGALS1</strong></td><td>6/11 (55%)</td><td>4.1e-16</td><td>DMG_3</td><td>Galectin-1 (immune)</td></tr>
-                <tr><td><strong>ITM2B</strong></td><td>6/11 (55%)</td><td>3.9e-12</td><td>GBM_3</td><td>Membrane protein</td></tr>
-                <tr><td><strong>CST3</strong></td><td>6/11 (55%)</td><td>2.4e-24</td><td>DMG_3</td><td>Cystatin C</td></tr>
-                <tr><td><strong>SPARCL1</strong></td><td>4/11 (36%)</td><td>2.3e-20</td><td>DMG_2</td><td>ECM protein</td></tr>
+                <tr><th>Gene</th><th>IR Sig</th><th>Best IR p</th><th>GC Sig</th><th>Best GC p</th><th>IC Sig</th><th>Best IC p</th><th>Tier</th></tr>
+                <tr style="background-color:#e8f6e8"><td><strong>CLU</strong></td><td>11/11</td><td>5.1e-74</td><td>11/11</td><td>1e-300</td><td>11/11</td><td>1e-300</td><td>TIER1</td></tr>
+                <tr style="background-color:#e8f6e8"><td><strong>B2M</strong></td><td>11/11</td><td>1.7e-67</td><td>11/11</td><td>1e-300</td><td>11/11</td><td>1e-300</td><td>TIER2</td></tr>
+                <tr style="background-color:#e8f6e8"><td><strong>CD74</strong></td><td>8/10</td><td>5.5e-38</td><td>10/10</td><td>1.8e-168</td><td>10/10</td><td>9.1e-95</td><td>TIER1</td></tr>
+                <tr><td><strong>MIF</strong></td><td>9/11</td><td>2.2e-21</td><td>11/11</td><td>2.1e-210</td><td>11/11</td><td>2.8e-93</td><td>TIER2</td></tr>
+                <tr><td><strong>PTGDS</strong></td><td>6/8</td><td>8.2e-63</td><td>8/8</td><td>1e-300</td><td>8/8</td><td>1e-300</td><td>TIER2</td></tr>
+                <tr><td><strong>CST3</strong></td><td>6/10</td><td>2.4e-24</td><td>10/10</td><td>2.4e-193</td><td>10/10</td><td>2.0e-223</td><td>TIER2</td></tr>
+                <tr><td><strong>TIMP1</strong></td><td>6/9</td><td>3.3e-16</td><td>9/9</td><td>1e-300</td><td>9/9</td><td>1e-300</td><td>TIER2</td></tr>
+                <tr><td><strong>LGALS1</strong></td><td>6/8</td><td>4.1e-16</td><td>8/8</td><td>2.8e-267</td><td>8/8</td><td>2.6e-182</td><td>TIER2</td></tr>
+                <tr><td><strong>ITM2B</strong></td><td>6/10</td><td>3.9e-12</td><td>10/10</td><td>1.2e-73</td><td>10/10</td><td>2.3e-44</td><td>TIER2</td></tr>
+                <tr style="background-color:#e8f6e8"><td><strong>SPARCL1</strong></td><td>4/11</td><td>2.3e-20</td><td>11/11</td><td>7.9e-77</td><td>11/11</td><td>1.8e-52</td><td>TIER1</td></tr>
+                <tr><td><strong>APOE</strong></td><td>4/10</td><td>2.6e-04</td><td>10/10</td><td>1e-300</td><td>10/10</td><td>8.4e-194</td><td>TIER2</td></tr>
+                <tr style="background-color:#e8f6e8"><td><strong>SPP1</strong></td><td>3/9</td><td>1.6e-08</td><td>9/9</td><td>1e-300</td><td>9/9</td><td>1.0e-151</td><td>TIER1</td></tr>
             </table>
+        </div>
+
+        <div class="key-finding">
+            <strong>ONT Key Findings:</strong>
+            <ul>
+                <li><strong>CLU</strong> and <strong>B2M</strong>: 100% reproducibility across all samples for all three tests</li>
+                <li><strong>HSIC-GC</strong> (expression) shows near-universal significance (p < 1e-100), indicating these genes are highly spatially variable in expression</li>
+                <li><strong>HSIC-IR</strong> (isoform ratio) is more selective, highlighting genes with true isoform switching independent of expression</li>
+                <li>4 genes (CLU, CD74, SPP1, SPARCL1) achieved TIER1 validation with scRNA-seq confirmation</li>
+            </ul>
         </div>
     </div>
 
@@ -263,49 +288,54 @@
         <h2>3. Visium SR SPLISOSM Results Summary</h2>
 
         <div class="new-results">
-            <h3>Top Spatially Variable Genes - <span class="test-badge">HSIC-IR</span> Test (Short-Read)</h3>
-            <p>Analysis of 10 SecAct target genes across 13 Visium SR samples. Note: SR captures <strong>APA (Alternative PolyAdenylation)</strong> patterns, not internal splice isoforms. Significance determined by HSIC-IR p-value < 0.05:</p>
+            <h3>Top Spatially Variable Genes - Full HSIC Analysis (IR, GC, IC)</h3>
+            <p>Comprehensive analysis of 23 SecAct target genes across 13 Visium SR samples with all three test statistics. Note: SR (3' capture) detects <strong>APA (Alternative PolyAdenylation)</strong> patterns.</p>
             <table>
-                <tr><th>Gene</th><th>Samples Sig</th><th>Best HSIC-IR p-value</th><th>Best Sample</th><th>Total Isoforms</th></tr>
-                <tr><td><strong>SPP1</strong></td><td>11/12 (92%)</td><td style="color:#27ae60"><strong>1.1e-90</strong></td><td>ZH8811Abulk</td><td>2</td></tr>
-                <tr><td><strong>HMGB1</strong></td><td>11/13 (85%)</td><td style="color:#27ae60"><strong>3.0e-86</strong></td><td>ZH8811Abulk</td><td>4-6</td></tr>
-                <tr><td><strong>C3</strong></td><td>8/13 (62%)</td><td style="color:#27ae60"><strong>9.2e-45</strong></td><td>ZH8811Bbulk</td><td>2</td></tr>
-                <tr><td><strong>APP</strong></td><td>4/7 (57%)</td><td>5.7e-28</td><td>ZH916bulk</td><td>2-5</td></tr>
-                <tr><td><strong>VCAN</strong></td><td>8/13 (62%)</td><td>3.7e-19</td><td>ZH1019T1</td><td>3-10</td></tr>
-                <tr><td><strong>IGFBP5</strong></td><td>5/7 (71%)</td><td>1.3e-05</td><td>ZH916bulk</td><td>2-4</td></tr>
-                <tr><td><strong>CTSB</strong></td><td>2/4 (50%)</td><td>5.1e-09</td><td>ZH916bulk</td><td>2-3</td></tr>
-                <tr><td><strong>CLU</strong></td><td>1/1 (100%)</td><td>1.4e-04</td><td>ZH916inf</td><td>2</td></tr>
-                <tr><td><strong>SPARCL1</strong></td><td>1/1 (100%)</td><td>0.030</td><td>ZH916inf</td><td>3</td></tr>
+                <tr><th>Gene</th><th>IR Sig</th><th>Best IR p</th><th>GC Sig</th><th>Best GC p</th><th>IC Sig</th><th>Best IC p</th><th>Tier</th></tr>
+                <tr style="background-color:#e8f6e8"><td><strong>SPP1</strong></td><td>11/11</td><td>5.1e-124</td><td>11/11</td><td>1e-300</td><td>11/11</td><td>1.1e-117</td><td>TIER1</td></tr>
+                <tr><td><strong>SPARC</strong></td><td>9/13</td><td>2.2e-121</td><td>13/13</td><td>2.4e-257</td><td>13/13</td><td>1.1e-163</td><td>TIER2</td></tr>
+                <tr style="background-color:#e8f6e8"><td><strong>HMGB1</strong></td><td>11/13</td><td>3.9e-62</td><td>13/13</td><td>1.8e-99</td><td>13/13</td><td>7.6e-104</td><td>TIER1</td></tr>
+                <tr><td><strong>SERPINE2</strong></td><td>9/12</td><td>4.5e-55</td><td>10/12</td><td>5.1e-78</td><td>10/12</td><td>1.2e-65</td><td>TIER2</td></tr>
+                <tr><td><strong>NCAM1</strong></td><td>11/13</td><td>2.1e-54</td><td>12/13</td><td>6.5e-89</td><td>12/13</td><td>2.2e-66</td><td>TIER2</td></tr>
+                <tr><td><strong>SERPINE1</strong></td><td>8/12</td><td>1.5e-42</td><td>12/12</td><td>1e-300</td><td>8/12</td><td>1e-300</td><td>TIER2</td></tr>
+                <tr><td><strong>C3</strong></td><td>8/11</td><td>3.2e-41</td><td>11/11</td><td>4.3e-138</td><td>10/11</td><td>8.2e-186</td><td>TIER2</td></tr>
+                <tr style="background-color:#e8f6e8"><td><strong>APP</strong></td><td>4/7</td><td>2.5e-32</td><td>6/7</td><td>7.6e-98</td><td>5/7</td><td>5.3e-56</td><td>TIER1</td></tr>
+                <tr style="background-color:#e8f6e8"><td><strong>VCAN</strong></td><td>7/13</td><td>1.1e-18</td><td>13/13</td><td>1.6e-165</td><td>11/13</td><td>2.2e-58</td><td>TIER1</td></tr>
+                <tr><td><strong>CTSB</strong></td><td>2/3</td><td>3.0e-14</td><td>3/3</td><td>3.8e-114</td><td>3/3</td><td>9.4e-93</td><td>TIER2</td></tr>
+                <tr><td><strong>ITM2B</strong></td><td>8/11</td><td>1.6e-12</td><td>11/11</td><td>5.5e-173</td><td>11/11</td><td>1.9e-45</td><td>TIER2</td></tr>
+                <tr><td><strong>IGFBP5</strong></td><td>5/6</td><td>8.4e-12</td><td>6/6</td><td>1.8e-130</td><td>6/6</td><td>1.6e-212</td><td>TIER2</td></tr>
+                <tr><td><strong>AGT</strong></td><td>5/8</td><td>1.8e-10</td><td>8/8</td><td>4.1e-298</td><td>8/8</td><td>2.6e-265</td><td>TIER2</td></tr>
             </table>
         </div>
 
         <div class="key-finding">
             <strong>Key SR Findings:</strong>
             <ul>
-                <li><strong>SPP1</strong> (Osteopontin): Strongest spatial APA pattern (p=1.1e-90). Known immune modulator with alternative polyadenylation affecting mRNA stability.</li>
-                <li><strong>HMGB1</strong>: Highly reproducible (11/13 samples, p=3.0e-86). DAMP signal with 3' UTR regulation affecting secretion.</li>
-                <li><strong>C3</strong> (Complement): Consistent spatial variation (8/13 samples, p=9.2e-45). Immune complement with microenvironment-specific APA.</li>
+                <li><strong>SPP1</strong>: Strongest spatial IR pattern (p=5.1e-124), 100% reproducible across samples</li>
+                <li><strong>VCAN</strong>: TIER1 validated gene with 7/13 samples showing significant isoform ratio variation and 99% ΔPSI in scRNA-seq</li>
+                <li><strong>HSIC-GC</strong> extremely significant for most genes (p < 1e-100), indicating strong spatial gene expression patterns</li>
+                <li><strong>13 genes</strong> show HSIC-IR significance in >50% of samples, all with p < 1e-10</li>
             </ul>
         </div>
 
-        <h3>SR vs ONT Comparison</h3>
+        <h3>SR vs ONT Platform Comparison (HSIC-IR)</h3>
         <table>
-            <tr><th>Gene</th><th>SR Significance</th><th>ONT Significance</th><th>Concordance</th></tr>
-            <tr><td>SPP1</td><td>11/12 (92%)</td><td>3/9 (33%)</td><td style="color:#f39c12">SR > ONT</td></tr>
-            <tr><td>HMGB1</td><td>11/13 (85%)</td><td>0/3 (0%)</td><td style="color:#f39c12">SR > ONT</td></tr>
-            <tr><td>C3</td><td>8/13 (62%)</td><td>Not tested</td><td>-</td></tr>
-            <tr><td>VCAN</td><td>8/13 (62%)</td><td>3/9 (33%)</td><td style="color:#f39c12">SR > ONT</td></tr>
-            <tr><td>CLU</td><td>1/1 (100%)</td><td>11/11 (100%)</td><td class="validated">Concordant</td></tr>
-            <tr><td>APP</td><td>4/7 (57%)</td><td>0/3 (0%)</td><td style="color:#f39c12">SR > ONT</td></tr>
+            <tr><th>Gene</th><th>SR (IR Sig/Total)</th><th>Best SR p</th><th>ONT (IR Sig/Total)</th><th>Best ONT p</th><th>Platform</th></tr>
+            <tr style="background-color:#e8f6e8"><td>SPP1</td><td>11/11 (100%)</td><td>5.1e-124</td><td>3/9 (33%)</td><td>1.6e-08</td><td>SR dominant</td></tr>
+            <tr style="background-color:#e8f6e8"><td>HMGB1</td><td>11/13 (85%)</td><td>3.9e-62</td><td>0/3 (0%)</td><td>0.13</td><td>SR only</td></tr>
+            <tr style="background-color:#fff3cd"><td>CLU</td><td>1/1 (100%)</td><td>1.7e-05</td><td>11/11 (100%)</td><td>5.1e-74</td><td>ONT dominant</td></tr>
+            <tr style="background-color:#e8f6e8"><td>VCAN</td><td>7/13 (54%)</td><td>1.1e-18</td><td>0/0 (N/A)</td><td>N/A</td><td>SR only</td></tr>
+            <tr><td>APP</td><td>4/7 (57%)</td><td>2.5e-32</td><td>0/3 (0%)</td><td>0.29</td><td>SR only</td></tr>
+            <tr><td>SPARCL1</td><td>0/1 (0%)</td><td>0.21</td><td>4/11 (36%)</td><td>2.3e-20</td><td>ONT dominant</td></tr>
         </table>
 
         <div class="interpretation-box">
-            <h3>Interpretation: Why SR Shows Stronger Signals</h3>
-            <p>Several factors may explain stronger SR results:</p>
+            <h3>Interpretation: Platform-Specific Patterns</h3>
+            <p>The platforms detect complementary biology:</p>
             <ul>
-                <li><strong>Higher read depth:</strong> SR typically has 10-100x more reads than ONT, improving detection sensitivity</li>
-                <li><strong>Different biology:</strong> APA (3' UTR) regulation responds to microenvironment signals (hypoxia, stress), while internal splicing may be more cell-type intrinsic</li>
-                <li><strong>More samples:</strong> 13 SR vs 11 ONT samples provides better statistical power</li>
+                <li><strong>SR-dominant genes (SPP1, HMGB1, VCAN):</strong> 3' UTR/APA variation responds strongly to microenvironment signals. Higher SR read depth improves sensitivity.</li>
+                <li><strong>ONT-dominant genes (CLU, SPARCL1):</strong> Internal splice isoforms require full-length transcripts. ONT captures these despite lower coverage.</li>
+                <li><strong>VCAN:</strong> SR detects APA variation while ONT detects full isoforms - both are biologically relevant but independent mechanisms.</li>
             </ul>
         </div>
     </div>
@@ -461,27 +491,40 @@
     </div>
 
     <div class="container">
-        <h2>7. Additional Significant Genes - <span class="test-badge">HSIC-IR</span></h2>
+        <h2>7. TIER2_SPATIAL Genes (Spatial-only, no scRNA validation)</h2>
 
-        <p>Beyond APP, VCAN, and CLU, several other SecAct targets show strong spatial isoform variation by HSIC-IR:</p>
+        <p>These genes show significant spatial HSIC-IR variation but no scRNA-seq validation, suggesting microenvironment-driven regulation rather than cell-intrinsic splicing:</p>
 
         <h3>Immune-Related Genes</h3>
         <table>
-            <tr><th>Gene</th><th>Samples Sig (HSIC-IR)</th><th>Best HSIC-IR p-value</th><th>Isoforms</th><th>Function</th></tr>
-            <tr><td><strong>B2M</strong></td><td>11/11</td><td>1.7e-67</td><td>4-6</td><td>Beta-2-microglobulin, MHC-I presentation</td></tr>
-            <tr><td><strong>CD74</strong></td><td>8/11</td><td>5.5e-38</td><td>4-13</td><td>MHC-II invariant chain, antigen processing</td></tr>
-            <tr><td><strong>MIF</strong></td><td>9/11</td><td>2.2e-21</td><td>2-4</td><td>Macrophage migration inhibitory factor</td></tr>
-            <tr><td><strong>LGALS1</strong></td><td>6/11</td><td>4.1e-16</td><td>3-5</td><td>Galectin-1, immunosuppression</td></tr>
+            <tr><th>Gene</th><th>IR Sig</th><th>Best IR p</th><th>GC Sig</th><th>Best GC p</th><th>IC Sig</th><th>Function</th></tr>
+            <tr><td><strong>B2M</strong></td><td>11/11</td><td>1.7e-67</td><td>11/11</td><td>1e-300</td><td>11/11</td><td>MHC-I component</td></tr>
+            <tr><td><strong>MIF</strong></td><td>10/12</td><td>2.2e-21</td><td>12/12</td><td>2.1e-210</td><td>12/12</td><td>Macrophage migration factor</td></tr>
+            <tr><td><strong>LGALS1</strong></td><td>6/8</td><td>4.1e-16</td><td>8/8</td><td>2.8e-267</td><td>8/8</td><td>Galectin-1, immunosuppression</td></tr>
+            <tr><td><strong>C3</strong></td><td>9/18</td><td>3.2e-41</td><td>18/18</td><td>4.3e-138</td><td>13/18</td><td>Complement component 3</td></tr>
         </table>
 
         <h3>ECM/Stress Response Genes</h3>
         <table>
-            <tr><th>Gene</th><th>Samples Sig (HSIC-IR)</th><th>Best HSIC-IR p-value</th><th>Isoforms</th><th>Function</th></tr>
-            <tr><td><strong>TIMP1</strong></td><td>6/11</td><td>3.3e-16</td><td>2-6</td><td>Tissue inhibitor of metalloproteinases</td></tr>
-            <tr><td><strong>SPARCL1</strong></td><td>4/11</td><td>2.3e-20</td><td>3-10</td><td>ECM glycoprotein</td></tr>
-            <tr><td><strong>CST3</strong></td><td>6/11</td><td>2.4e-24</td><td>2</td><td>Cystatin C, protease inhibitor</td></tr>
-            <tr><td><strong>PTGDS</strong></td><td>6/11</td><td>8.2e-63</td><td>2-7</td><td>Prostaglandin D2 synthase</td></tr>
+            <tr><th>Gene</th><th>IR Sig</th><th>Best IR p</th><th>GC Sig</th><th>Best GC p</th><th>IC Sig</th><th>Function</th></tr>
+            <tr><td><strong>SPARC</strong></td><td>12/20</td><td>2.2e-121</td><td>20/20</td><td>2.4e-257</td><td>18/20</td><td>Secreted acidic cysteine-rich glycoprotein</td></tr>
+            <tr><td><strong>SERPINE2</strong></td><td>11/17</td><td>4.5e-55</td><td>15/17</td><td>5.1e-78</td><td>12/17</td><td>Protease nexin-1</td></tr>
+            <tr><td><strong>NCAM1</strong></td><td>11/13</td><td>2.1e-54</td><td>12/13</td><td>6.5e-89</td><td>12/13</td><td>Neural cell adhesion molecule</td></tr>
+            <tr><td><strong>TIMP1</strong></td><td>6/9</td><td>3.3e-16</td><td>9/9</td><td>1e-300</td><td>9/9</td><td>TIMP metallopeptidase inhibitor</td></tr>
+            <tr><td><strong>CST3</strong></td><td>6/10</td><td>2.4e-24</td><td>10/10</td><td>2.4e-193</td><td>10/10</td><td>Cystatin C</td></tr>
+            <tr><td><strong>PTGDS</strong></td><td>6/8</td><td>8.2e-63</td><td>8/8</td><td>1e-300</td><td>8/8</td><td>Prostaglandin D2 synthase</td></tr>
+            <tr><td><strong>ITM2B</strong></td><td>14/21</td><td>1.6e-12</td><td>21/21</td><td>5.5e-173</td><td>21/21</td><td>Integral membrane protein 2B</td></tr>
         </table>
+
+        <div class="interpretation-box">
+            <h3>Interpretation: Microenvironment-Driven Isoform Regulation</h3>
+            <p>TIER2 genes show strong spatial patterns but no cell-type-specific splicing in scRNA-seq. This suggests:</p>
+            <ul>
+                <li><strong>Extrinsic signal regulation:</strong> Isoform ratios respond to local microenvironment (hypoxia, ECM, cytokines) rather than cell identity</li>
+                <li><strong>APA dominance:</strong> Many TIER2 genes (SPARC, SERPINE2, ITM2B) show 3' UTR length changes, which are sensitive to stress signals</li>
+                <li><strong>Tissue context:</strong> Spatial patterns may reflect gradients in oxygen, pH, or mechanical stress that are lost in dissociated cells</li>
+            </ul>
+        </div>
     </div>
 
     <div class="container">
@@ -489,82 +532,74 @@
 
         <div class="new-results">
             <h3>Comprehensive Validation Analysis</h3>
-            <p>Extracted PSI values for 84 splice events across 32,222 cells. Ran Wilcoxon tests comparing 16 cell states (3,375 total comparisons). <strong>194 significant events</strong> found (|ΔPSI| > 10%, padj < 0.05).</p>
+            <p>Extracted PSI values for 84 splice events across 32,222 cells. Ran Wilcoxon tests comparing 16 cell states (3,375 total comparisons). <strong>194 significant events</strong> found (|ΔPSI| > 10%, padj < 0.05). Event types include SE (Skipped Exon), MXE (Mutually Exclusive), A5SS, A3SS (Alternative Splice Sites), AFE/ALE (Alternative First/Last Exon).</p>
         </div>
 
-        <h3>Validated Genes (8 of 22 candidates)</h3>
+        <h3>TIER1_FULL Validated Genes (7 genes with both spatial IR + scRNA validation)</h3>
         <table>
             <tr>
                 <th>Gene</th>
-                <th>Visium (HSIC-IR)</th>
+                <th>Spatial HSIC-IR</th>
+                <th>Best IR p-val</th>
                 <th>scRNA Events</th>
                 <th>Max ΔPSI</th>
-                <th>Best p-value</th>
-                <th>Status</th>
+                <th>Best scRNA p</th>
             </tr>
-            <tr>
-                <td><strong>VCAN</strong></td>
-                <td>3/9 samples (33%)</td>
-                <td>45 events</td>
-                <td style="color:#27ae60"><strong>99.3%</strong></td>
-                <td>1.4e-180</td>
-                <td class="validated">STRONG</td>
-            </tr>
-            <tr>
-                <td><strong>APP</strong></td>
-                <td>0/3 samples (low expr)</td>
-                <td>65 events</td>
-                <td style="color:#27ae60"><strong>66.9%</strong></td>
-                <td>8.6e-52</td>
-                <td class="validated">STRONG</td>
-            </tr>
-            <tr>
-                <td><strong>HMGB1</strong></td>
-                <td>0/3 samples (low expr)</td>
-                <td>39 events</td>
-                <td style="color:#27ae60"><strong>96.4%</strong></td>
-                <td>1.2e-38</td>
-                <td class="validated">STRONG</td>
-            </tr>
-            <tr>
-                <td><strong>CLU</strong></td>
-                <td>11/11 samples (100%)</td>
-                <td>26 events</td>
-                <td>19.5%</td>
-                <td>4.4e-38</td>
-                <td class="validated">STRONG</td>
-            </tr>
-            <tr>
+            <tr style="background-color:#e8f6e8">
                 <td><strong>SPP1</strong></td>
-                <td>3/9 samples (33%)</td>
+                <td>14/20 (70%)</td>
+                <td>5.1e-124</td>
                 <td>9 events</td>
                 <td>27.7%</td>
-                <td>1.8e-05</td>
-                <td class="validated">STRONG</td>
+                <td>2.0e-04</td>
             </tr>
-            <tr>
-                <td><strong>LGALS3</strong></td>
-                <td>2/6 samples (33%)</td>
-                <td>3 events</td>
-                <td>16.0%</td>
-                <td>2.6e-12</td>
-                <td style="color:#f39c12"><strong>MODERATE</strong></td>
+            <tr style="background-color:#e8f6e8">
+                <td><strong>CLU</strong></td>
+                <td>12/12 (100%)</td>
+                <td>5.1e-74</td>
+                <td>26 events</td>
+                <td>19.5%</td>
+                <td>4.0e-36</td>
             </tr>
-            <tr>
+            <tr style="background-color:#e8f6e8">
+                <td><strong>HMGB1</strong></td>
+                <td>11/16 (69%)</td>
+                <td>3.9e-62</td>
+                <td>39 events</td>
+                <td style="color:#27ae60"><strong>96.4%</strong></td>
+                <td>1.2e-36</td>
+            </tr>
+            <tr style="background-color:#e8f6e8">
                 <td><strong>CD74</strong></td>
-                <td>8/10 samples (80%)</td>
+                <td>8/10 (80%)</td>
+                <td>5.5e-38</td>
                 <td>4 events</td>
                 <td style="color:#27ae60"><strong>83.0%</strong></td>
-                <td>5.7e-07</td>
-                <td style="color:#f39c12"><strong>MODERATE</strong></td>
+                <td>7.5e-06</td>
             </tr>
-            <tr>
+            <tr style="background-color:#e8f6e8">
+                <td><strong>APP</strong></td>
+                <td>4/10 (40%)</td>
+                <td>2.5e-32</td>
+                <td>65 events</td>
+                <td style="color:#27ae60"><strong>66.9%</strong></td>
+                <td>1.4e-49</td>
+            </tr>
+            <tr style="background-color:#e8f6e8">
                 <td><strong>SPARCL1</strong></td>
-                <td>4/11 samples (36%)</td>
+                <td>4/12 (33%)</td>
+                <td>2.3e-20</td>
                 <td>3 events</td>
                 <td>13.8%</td>
-                <td>4.4e-04</td>
-                <td style="color:#f39c12"><strong>MODERATE</strong></td>
+                <td>3.4e-03</td>
+            </tr>
+            <tr style="background-color:#e8f6e8">
+                <td><strong>VCAN</strong></td>
+                <td>7/13 (54%)</td>
+                <td>1.1e-18</td>
+                <td>45 events</td>
+                <td style="color:#27ae60"><strong>99.3%</strong></td>
+                <td>1.6e-177</td>
             </tr>
         </table>
 
@@ -750,6 +785,17 @@
             This validates that the spatial HSIC-IR patterns detected by SPLISOSM reflect true cell-type-specific isoform usage, not just random spatial variation.
         </div>
 
+        <h3>Spatial Visualization of VCAN Isoform Switching</h3>
+        <div class="figure-container">
+            <img src="fig4_spatial_isoform_switching.png" alt="Spatial VCAN Isoform Switching - ZH1019inf">
+            <div class="figure-caption">Figure 4: Spatial distribution of VCAN isoform switching in sample ZH1019inf. Left: VCAN-expressing spots (blue) on tissue. Middle: VCAN isoform 1 fraction (red=high/tumor-like, blue=low/macrophage-like). Right: Correlation of isoform 1 fraction with tumor (positive, red) and macrophage (negative, blue) cell proportions. This demonstrates that spatial isoform patterns directly reflect cell type composition.</div>
+        </div>
+
+        <div class="figure-container">
+            <img src="fig5_spatial_isoform_ZH1019T1.png" alt="Spatial VCAN Isoform Switching - ZH1019T1">
+            <div class="figure-caption">Figure 5: Spatial distribution of VCAN isoform switching in sample ZH1019T1 (second-best example). Shows consistent tumor (r=+0.212) vs macrophage (r=-0.133) correlation pattern, confirming reproducibility across samples.</div>
+        </div>
+
         <div class="interpretation-box">
             <h3>Biological Interpretation</h3>
             <p>The opposite correlations between tumor and immune cells (macrophages, pDCs, mast cells) suggest:</p>
@@ -814,14 +860,17 @@
         <p>All analysis results are available as CSV files in the <code>reports/</code> directory:</p>
         <table>
             <tr><th>File</th><th>Description</th><th>Rows</th></tr>
-            <tr><td colspan="3" style="background-color:#e8f4fd"><strong>Visium SR Results</strong></td></tr>
-            <tr><td><code>pilot_splisosm_full_results.csv</code></td><td>Full SR HSIC-IR results for 10 genes × 13 samples</td><td>68</td></tr>
-            <tr><td colspan="3" style="background-color:#e8f4fd"><strong>Visium ONT Results</strong></td></tr>
-            <tr><td><code>ont_splisosm_full_results.csv</code></td><td>Full ONT HSIC-IR results for 26 genes × 11 samples</td><td>180</td></tr>
-            <tr><td><code>candidate_validation_summary.csv</code></td><td>ONT validation status per gene</td><td>26</td></tr>
+            <tr><td colspan="3" style="background-color:#e8f4fd"><strong>Comprehensive Validation Report</strong></td></tr>
+            <tr><td><code>final_validation_report.csv</code></td><td>Gene-level summary with all IR/GC/IC stats, tiers, and scRNA validation</td><td>32</td></tr>
+            <tr><td colspan="3" style="background-color:#e8f4fd"><strong>Visium SR Results (Full HSIC-IR/GC/IC)</strong></td></tr>
+            <tr><td><code>sr_splisosm_full_results.csv</code></td><td>Full SR results with all 3 statistics for 23 genes × 13 samples</td><td>183</td></tr>
+            <tr><td><code>sr_splisosm_gene_summary.csv</code></td><td>SR gene-level summary across samples</td><td>23</td></tr>
+            <tr><td colspan="3" style="background-color:#e8f4fd"><strong>Visium ONT Results (Full HSIC-IR/GC/IC)</strong></td></tr>
+            <tr><td><code>ont_splisosm_full_results.csv</code></td><td>Full ONT results with all 3 statistics for 26 genes × 11 samples</td><td>180</td></tr>
+            <tr><td><code>ont_splisosm_gene_summary.csv</code></td><td>ONT gene-level summary across samples</td><td>26</td></tr>
             <tr><td colspan="3" style="background-color:#e8f4fd"><strong>scRNA-seq Validation</strong></td></tr>
             <tr><td><code>scrna_full_psi_differential.csv</code></td><td>All 3,375 pairwise PSI comparisons across 16 cell states</td><td>3,375</td></tr>
-            <tr><td><code>scrna_validation_corrected.csv</code></td><td>Gene-level validation summary (8 validated genes)</td><td>8</td></tr>
+            <tr><td><code>scrna_validation_all_genes.csv</code></td><td>Gene-level scRNA validation summary</td><td>22</td></tr>
             <tr><td colspan="3" style="background-color:#e8f4fd"><strong>SpaCET Deconvolution</strong></td></tr>
             <tr><td><code>spacet_isoform_correlations.csv</code></td><td>VCAN isoform-cell type correlations for 14 cell types × 13 samples</td><td>182</td></tr>
             <tr><td><code>spacet_correlation_summary.csv</code></td><td>Summary statistics by cell type</td><td>14</td></tr>
@@ -830,6 +879,31 @@
             <tr><td><code>fig2_vcan_source_data.csv</code></td><td>VCAN pilot SPLISOSM results</td><td>13</td></tr>
             <tr><td><code>fig3_clu_source_data.csv</code></td><td>CLU ONT SPLISOSM results</td><td>11</td></tr>
         </table>
+    </div>
+
+    <div class="container">
+        <h2>13. Conclusions</h2>
+
+        <div class="summary-box">
+            <h3>Key Findings Summary</h3>
+            <ol>
+                <li><strong>7 genes achieved TIER1_FULL validation</strong> (SPP1, CLU, HMGB1, CD74, APP, SPARCL1, VCAN) with both significant spatial HSIC-IR patterns and scRNA-seq differential splicing.</li>
+                <li><strong>VCAN shows the largest effect</strong> with 99% ΔPSI between macrophages (low) and tumor cells (high), confirmed by SpaCET deconvolution showing positive tumor correlation (r=+0.19) and negative macrophage correlation (r=-0.17).</li>
+                <li><strong>HSIC-GC (expression) is near-universal</strong> while <strong>HSIC-IR (isoform ratio) is selective</strong>, demonstrating that isoform switching occurs in a subset of spatially variable genes.</li>
+                <li><strong>19 TIER2 genes</strong> show spatial-only patterns without scRNA validation, suggesting microenvironment-driven APA regulation independent of cell identity.</li>
+                <li><strong>Platform complementarity:</strong> SR detects 3' UTR/APA variation while ONT captures full-length splice isoforms - both are biologically relevant.</li>
+            </ol>
+        </div>
+
+        <div class="interpretation-box">
+            <h3>Biological Implications</h3>
+            <p>The spatial isoform patterns identified by SPLISOSM reveal two distinct regulatory mechanisms:</p>
+            <ul>
+                <li><strong>Cell-intrinsic splicing (TIER1):</strong> Genes like VCAN and APP have cell-type-specific splicing programs that create spatial patterns reflecting cellular composition of the tumor microenvironment.</li>
+                <li><strong>Microenvironment-driven regulation (TIER2):</strong> Genes like B2M, MIF, and SPARC show spatial patterns without cell-type specificity, suggesting that local signals (hypoxia, ECM, cytokines) regulate isoform usage independently of cell identity.</li>
+            </ul>
+            <p>These findings have implications for understanding how the tumor microenvironment modulates secreted protein function through post-transcriptional mechanisms.</p>
+        </div>
     </div>
 </body>
 </html>

@@ -503,6 +503,7 @@ def generate_html(data):
                             <th>GC Sig</th>
                             <th>GC p-val</th>
                             <th>IC Sig</th>
+                            <th>IC p-val</th>
                             <th>scRNA ΔPSI</th>
                         </tr>
                     </thead>
@@ -792,6 +793,7 @@ def generate_html(data):
                     {{ data: null, render: (data, type, row) => row.gc_sig + '/' + row.total_samples }},
                     {{ data: 'gc_best_pval', render: (data, type) => type === 'display' ? formatPvalHtml(data) : data }},
                     {{ data: null, render: (data, type, row) => row.ic_sig + '/' + row.total_samples }},
+                    {{ data: 'ic_best_pval', render: (data, type) => type === 'display' ? formatPvalHtml(data) : data }},
                     {{ data: 'scrna_max_delta_psi', render: (data, type) => data ? (data * 100).toFixed(1) + '%' : '-' }}
                 ],
                 order: [[3, 'asc']],
