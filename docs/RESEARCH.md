@@ -110,11 +110,37 @@ Ran SPLISOSM HSIC-IR on 11 Visium-ONT glioma samples (6 GBM + 5 DMG) focusing on
 
 **Results file**: `data/zenodo_16905935/human_glioma_ont/ont_secact_splisosm_results.csv`
 
+### scRNA-seq Validation Complete (2026-02-04)
+
+Cross-validated HSIC-IR candidates against scRNA-seq differential splicing data (Zenodo 17055113: 32,304 cells, MARVEL PSI analysis).
+
+**Validation Results:**
+
+| Gene | ONT HSIC-IR | scRNA-seq Diff. Splicing | Validation |
+|------|-------------|--------------------------|------------|
+| **APP** | Not sig (low expr) | ΔPSI=55%, p=8.6e-52 | ✅ scRNA-seq |
+| **VCAN** | 3/9 sig (33%) | ΔPSI=64%, p=2.5e-11 | ✅ Both |
+| **CLU** | 11/11 sig (100%) | 118 events, no diff. | Spatial only |
+| **B2M** | 11/11 sig (100%) | 11 events, no diff. | Spatial only |
+| **CD74** | 8/10 sig (80%) | 94 events, no diff. | Spatial only |
+| **MIF** | 9/11 sig (82%) | 1 event, no diff. | Spatial only |
+
+**Key Findings:**
+- **APP**: Strong scRNA-seq validation (MES vs NPC: ΔPSI=-55%) despite low ONT expression
+- **VCAN**: Validated in both modalities - spatial patterns correlate with tumor state splicing
+- **CLU, B2M, CD74, MIF**: Highly reproducible spatial patterns (>80% samples) but no tumor-state-specific splicing in scRNA-seq. Suggests **microenvironment-driven** rather than cell-intrinsic regulation.
+
+**Source Data**: All validation results saved as CSV files in `reports/`:
+- `final_validation_report.csv`: Integrated validation summary
+- `candidate_validation_summary.csv`: ONT HSIC-IR results by gene
+- `scrna_wilcox_diff_20_gene_short_name.csv`: scRNA-seq differential splicing
+- `scrna_splice_feature_gene_short_name.csv`: All splice events for candidates
+
 ### Next Steps
 
 1. ~~Run SPLISOSM on ONT glioma samples~~ **DONE**
-2. **Biological interpretation**: Map isoform patterns to tumor regions (IvyGAP annotations)
-3. **Cross-validate**: Compare ONT splice isoforms with scRNA-seq PSI values
+2. ~~Cross-validate with scRNA-seq PSI values~~ **DONE**
+3. **Biological interpretation**: Map isoform patterns to tumor regions (IvyGAP annotations)
 4. **Expand targets**: Run on full set of testable genes (274 with multi-isoforms)
 
 ### Deferred Issues (Address Later)
