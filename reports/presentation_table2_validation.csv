@@ -1,0 +1,8 @@
+gene,isoform_mechanism,splice_events_tested,sig_events,sig_pct,max_delta_psi,best_padj,direction
+VCAN,3' UTR length (APA),108,45,42%,99%,1.6e-177,Near-complete switching
+HMGB1,Alt. last exon (ALE),273,39,14%,96%,1.2e-36,Tumor vs immune ALE choice
+CD74,Intron retention,136,4,3%,83%,7.5e-06,Immune-specific retention
+APP,Exon 7/8 skipping,294,65,22%,67%,1.4e-49,Neuronal APP695 vs APP751
+SPP1,3' UTR length (APA),483,9,2%,28%,2.0e-04,Macrophage vs tumor 3'UTR
+CLU,Alt. first exon (AFE),612,26,4%,19%,4.0e-36,Cell-type-specific promoter
+SPARCL1,3' UTR variants,460,3,1%,14%,3.4e-03,Modest glial effect

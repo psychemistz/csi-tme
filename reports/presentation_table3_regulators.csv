@@ -1,0 +1,9 @@
+gene,rbp,fisher_padj,sig_samples,rbp_function,mechanism
+HMGB1,RBFOX1,0.049,1/5,Neuronal splicing factor,RBFOX1 in residual neurons regulates HMGB1 ALE choice
+SPP1,ELAVL1 (HuR),0.062,3/12,ARE-binding mRNA stabilizer,HuR binds AU-rich elements in SPP1 long 3'UTR
+SPP1,ELAVL3 (HuC),0.114,2/10,Neuronal ELAV paralog,Convergent ELAV-family regulation of SPP1 APA
+HMGB1,ELAVL1 (HuR),0.254,3/14,ARE-binding mRNA stabilizer,HuR modulates HMGB1 3' end processing
+SERPINE2,CELF5,0.288,1/6,Brain-enriched APA regulator,UG-rich motif binding in 3'UTR
+SPARC,ELAVL4 (HuD),0.288,2/7,Neuronal ELAV paralog,Neuron-specific 3'UTR regulation
+NCAM1,NOVA1,0.326,1/13,Neuronal splicing factor,Literature-validated NOVA1-NCAM1 axis
+VCAN,SRSF1,0.326,2/10,SR protein,Polyadenylation site selection
