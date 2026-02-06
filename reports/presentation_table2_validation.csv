@@ -1,8 +1,17 @@
-gene,isoform_mechanism,splice_events_tested,sig_events,sig_pct,max_delta_psi,best_padj,direction
-VCAN,3' UTR length (APA),108,45,42%,99%,1.6e-177,Near-complete switching
-HMGB1,Alt. last exon (ALE),273,39,14%,96%,1.2e-36,Tumor vs immune ALE choice
-CD74,Intron retention,136,4,3%,83%,7.5e-06,Immune-specific retention
-APP,Exon 7/8 skipping,294,65,22%,67%,1.4e-49,Neuronal APP695 vs APP751
-SPP1,3' UTR length (APA),483,9,2%,28%,2.0e-04,Macrophage vs tumor 3'UTR
-CLU,Alt. first exon (AFE),612,26,4%,19%,4.0e-36,Cell-type-specific promoter
-SPARCL1,3' UTR variants,460,3,1%,14%,3.4e-03,Modest glial effect
+gene,tier,isoform_mechanism,splice_events_tested,sig_events,sig_pct,max_delta_psi,best_padj,direction,validation
+VCAN,TIER1,Exon skipping / MXE,108,6/6,100%,99%,1.6e-177,Near-complete switching (Mac vs Tumor),STRONG
+HMGB1,TIER1,Alt. last exon (ALE),273,3/4,75%,96%,1.1e-57,Tumor vs immune ALE choice,STRONG
+CD74,TIER1,Exon skipping,136,2/10,20%,83%,1.5e-267,Immune-specific exon inclusion,MODERATE
+APP,TIER1,Exon 7/8 skipping (SE/MXE),294,3/7,43%,67%,1.4e-49,Neuronal APP695 vs APP751,STRONG
+SPP1,TIER1,3' UTR / APA (SE/AFE/ALE/MXE),483,5/16,31%,28%,1.3e-104,Macrophage vs tumor 3'UTR,STRONG
+CLU,TIER1,Alt. first exon (AFE),612,2/7,29%,19%,4.7e-49,Cell-type-specific promoter,STRONG
+LGALS3,TIER2,Exon skipping,22,1/1,100%,16%,6.8e-11,Macrophage vs astrocyte,MODERATE
+SPARCL1,TIER1,Exon skipping,460,1/6,17%,14%,8.6e-29,Modest glial effect,MODERATE
+SERPINE2,TIER2,Alt. 3'SS / SE,269,0/5,0%,18%,4.3e-07,Oligo vs unassigned (sub-threshold),NOT_SIG
+B2M,TIER2,Alt. first exon (AFE),93,0/2,0%,16%,3.6e-04,Mac vs T cell (sub-threshold),NOT_SIG
+TIMP1,TIER2,Exon skipping,181,0/2,0%,8%,1.6e-04,Small effect across cell types,NOT_SIG
+LGALS1,TIER2,Exon skipping,103,0/2,0%,4%,2.7e-32,Minimal splicing variation,NOT_SIG
+PTGDS,TIER2,Exon skipping,66,0/1,0%,3%,3.2e-04,Minimal splicing variation,NOT_SIG
+APOE,TIER2,Exon skipping,31,0/2,0%,2%,1.4e-05,Minimal splicing variation,NOT_SIG
+ITM2B,TIER2,AFE / SE,228,0/2,0%,0.2%,9.1e-04,No meaningful splicing variation,NOT_SIG
+C3,TIER2,A3SS / A5SS / SE,16,0/3,0%,0.7%,1.8e-01,Not significant,NOT_SIG
