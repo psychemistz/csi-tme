@@ -61,6 +61,8 @@ RBP_REGULATORS: List[str] = [
     # CELF family (CUG-BP, ETR-3 like)
     'CELF1',
     'CELF2',
+    'CELF4',
+    'CELF5',
     # QKI (quaking)
     'QKI',
     # NOVA family (neuronal splicing)
@@ -71,6 +73,8 @@ RBP_REGULATORS: List[str] = [
     'PTBP2',
     # ELAV/Hu family (AU-rich element binding)
     'ELAVL1',  # HuR
+    'ELAVL2',  # HuB
+    'ELAVL3',  # HuC
     'ELAVL4',  # HuD
     # SR proteins
     'SRSF1',

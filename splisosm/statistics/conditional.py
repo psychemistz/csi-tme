@@ -69,18 +69,26 @@ def spatial_residualize(
     else:
         squeeze = False
 
+    # Normalize coordinates to zero mean, unit variance so that the
+    # smoothing parameter has a consistent effect regardless of the
+    # coordinate scale (pixel coords vs array indices, etc.)
+    coord_mean = coords.mean(axis=0)
+    coord_std = coords.std(axis=0)
+    coord_std = np.where(coord_std > 0, coord_std, 1.0)
+    coords_norm = (coords - coord_mean) / coord_std
+
     if method == 'rbf':
         # RBF interpolation as spatial smoother
         interpolator = RBFInterpolator(
-            coords, values,
+            coords_norm, values,
             smoothing=rbf_smoothing,
             kernel='thin_plate_spline'
         )
-        predicted = interpolator(coords)
+        predicted = interpolator(coords_norm)
 
     elif method == 'polynomial':
         # Polynomial regression (degree 2)
-        x, y = coords[:, 0], coords[:, 1]
+        x, y = coords_norm[:, 0], coords_norm[:, 1]
         # Design matrix: [1, x, y, x^2, xy, y^2]
         X_design = np.column_stack([
             np.ones_like(x),
