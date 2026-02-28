@@ -1,0 +1,177 @@
+==========================================================================================
+Cross-package comparison: Python vs R vs C/MKL reference (first 100 genes)
+==========================================================================================
+
+──────────────────────────────────────────────────────────────────────────────────────────
+Dataset 1: /data/Jiang_Lab/Data/Beibei/paired_wise_moranI/1_vst.tsv
+──────────────────────────────────────────────────────────────────────────────────────────
+
+[Python]
+  Weight sum: 22079.014290, NNZ: 93638, Time: 6.4s
+
+[R]
+Loading: /data/Jiang_Lab/Data/Beibei/paired_wise_moranI/1_vst.tsv 
+  Shape: 19729 genes x 3813 spots
+Creating grid weights...
+  Weight sum: 22079.01 
+  NNZ: 93638 
+Computing pairwise Moran's I for 100 genes...
+Saving to: /tmp/r_grid_ds1.bin 
+Done.
+  R weight sum: 22079.014290, Time: 25.9s
+
+  Weight sum comparison: Python=22079.014290  R=22079.014290  diff=1.92e-09
+
+  Full precision:
+  Python vs C/MKL ref             max_abs=4.58e-07  mean_abs=7.14e-09  max_rel=4.83e-06  exact=0.0%
+  R vs C/MKL ref                  max_abs=4.58e-07  mean_abs=7.14e-09  max_rel=4.83e-06  exact=0.0%
+  Python vs R                     max_abs=4.92e-14  mean_abs=6.45e-16  max_rel=2.33e-13  exact=0.0%
+
+  6 significant figures:
+  Python vs C/MKL ref             max_abs=0.00e+00  mean_abs=0.00e+00  max_rel=0.00e+00  exact=100.0% (6 sig figs)
+  R vs C/MKL ref                  max_abs=0.00e+00  mean_abs=0.00e+00  max_rel=0.00e+00  exact=100.0% (6 sig figs)
+  Python vs R                     max_abs=0.00e+00  mean_abs=0.00e+00  max_rel=0.00e+00  exact=100.0% (6 sig figs)
+
+──────────────────────────────────────────────────────────────────────────────────────────
+Dataset 2: /data/Jiang_Lab/Data/Beibei/paired_wise_moranI/2_vst.tsv
+──────────────────────────────────────────────────────────────────────────────────────────
+
+[Python]
+  Weight sum: 27716.357319, NNZ: 118058, Time: 9.5s
+
+[R]
+Loading: /data/Jiang_Lab/Data/Beibei/paired_wise_moranI/2_vst.tsv 
+  Shape: 19419 genes x 4727 spots
+Creating grid weights...
+  Weight sum: 27716.36 
+  NNZ: 118058 
+Computing pairwise Moran's I for 100 genes...
+Saving to: /tmp/r_grid_ds2.bin 
+Done.
+  R weight sum: 27716.357319, Time: 30.5s
+
+  Weight sum comparison: Python=27716.357319  R=27716.357319  diff=4.65e-09
+
+  Full precision:
+  Python vs C/MKL ref             max_abs=4.99e-08  mean_abs=4.34e-09  max_rel=4.95e-06  exact=0.0%
+  R vs C/MKL ref                  max_abs=4.99e-08  mean_abs=4.34e-09  max_rel=4.95e-06  exact=0.0%
+  Python vs R                     max_abs=7.57e-14  mean_abs=7.96e-16  max_rel=3.02e-13  exact=0.0%
+
+  6 significant figures:
+  Python vs C/MKL ref             max_abs=0.00e+00  mean_abs=0.00e+00  max_rel=0.00e+00  exact=100.0% (6 sig figs)
+  R vs C/MKL ref                  max_abs=0.00e+00  mean_abs=0.00e+00  max_rel=0.00e+00  exact=100.0% (6 sig figs)
+  Python vs R                     max_abs=0.00e+00  mean_abs=0.00e+00  max_rel=0.00e+00  exact=100.0% (6 sig figs)
+
+──────────────────────────────────────────────────────────────────────────────────────────
+Dataset 3: /data/Jiang_Lab/Data/Beibei/paired_wise_moranI/3_vst.tsv
+──────────────────────────────────────────────────────────────────────────────────────────
+
+[Python]
+  Weight sum: 13965.542226, NNZ: 58996, Time: 3.3s
+
+[R]
+Loading: /data/Jiang_Lab/Data/Beibei/paired_wise_moranI/3_vst.tsv 
+  Shape: 15931 genes x 2518 spots
+Creating grid weights...
+  Weight sum: 13965.54 
+  NNZ: 58996 
+Computing pairwise Moran's I for 100 genes...
+Saving to: /tmp/r_grid_ds3.bin 
+Done.
+  R weight sum: 13965.542226, Time: 13.9s
+
+  Weight sum comparison: Python=13965.542226  R=13965.542226  diff=1.14e-09
+
+  Full precision:
+  Python vs C/MKL ref             max_abs=4.77e-07  mean_abs=1.28e-08  max_rel=4.95e-06  exact=0.0%
+  R vs C/MKL ref                  max_abs=4.77e-07  mean_abs=1.28e-08  max_rel=4.95e-06  exact=0.0%
+  Python vs R                     max_abs=5.18e-14  mean_abs=1.06e-15  max_rel=2.29e-13  exact=0.0%
+
+  6 significant figures:
+  Python vs C/MKL ref             max_abs=0.00e+00  mean_abs=0.00e+00  max_rel=0.00e+00  exact=100.0% (6 sig figs)
+  R vs C/MKL ref                  max_abs=0.00e+00  mean_abs=0.00e+00  max_rel=0.00e+00  exact=100.0% (6 sig figs)
+  Python vs R                     max_abs=0.00e+00  mean_abs=0.00e+00  max_rel=0.00e+00  exact=100.0% (6 sig figs)
+
+──────────────────────────────────────────────────────────────────────────────────────────
+Dataset 4: /data/Jiang_Lab/Data/Beibei/paired_wise_moranI/4_vst.tsv
+──────────────────────────────────────────────────────────────────────────────────────────
+
+[Python]
+  Weight sum: 18132.881836, NNZ: 77076, Time: 4.9s
+
+[R]
+Loading: /data/Jiang_Lab/Data/Beibei/paired_wise_moranI/4_vst.tsv 
+  Shape: 18882 genes x 3138 spots
+Creating grid weights...
+  Weight sum: 18132.88 
+  NNZ: 77076 
+Computing pairwise Moran's I for 100 genes...
+Saving to: /tmp/r_grid_ds4.bin 
+Done.
+  R weight sum: 18132.881836, Time: 20.6s
+
+  Weight sum comparison: Python=18132.881836  R=18132.881836  diff=5.09e-11
+
+  Full precision:
+  Python vs C/MKL ref             max_abs=3.79e-07  mean_abs=5.52e-09  max_rel=4.84e-06  exact=0.0%
+  R vs C/MKL ref                  max_abs=3.79e-07  mean_abs=5.52e-09  max_rel=4.84e-06  exact=0.0%
+  Python vs R                     max_abs=5.83e-16  mean_abs=1.87e-17  max_rel=3.04e-13  exact=1.2%
+
+  6 significant figures:
+  Python vs C/MKL ref             max_abs=0.00e+00  mean_abs=0.00e+00  max_rel=0.00e+00  exact=100.0% (6 sig figs)
+  R vs C/MKL ref                  max_abs=0.00e+00  mean_abs=0.00e+00  max_rel=0.00e+00  exact=100.0% (6 sig figs)
+  Python vs R                     max_abs=0.00e+00  mean_abs=0.00e+00  max_rel=0.00e+00  exact=100.0% (6 sig figs)
+
+──────────────────────────────────────────────────────────────────────────────────────────
+Dataset 5: /data/Jiang_Lab/Data/Beibei/paired_wise_moranI/5_vst.tsv
+──────────────────────────────────────────────────────────────────────────────────────────
+
+[Python]
+  Weight sum: 15353.194255, NNZ: 65274, Time: 3.4s
+
+[R]
+Loading: /data/Jiang_Lab/Data/Beibei/paired_wise_moranI/5_vst.tsv 
+  Shape: 15920 genes x 2660 spots
+Creating grid weights...
+  Weight sum: 15353.19 
+  NNZ: 65274 
+Computing pairwise Moran's I for 100 genes...
+Saving to: /tmp/r_grid_ds5.bin 
+Done.
+  R weight sum: 15353.194255, Time: 14.5s
+
+  Weight sum comparison: Python=15353.194255  R=15353.194255  diff=8.62e-10
+
+  Full precision:
+  Python vs C/MKL ref             max_abs=4.98e-07  mean_abs=1.35e-08  max_rel=4.90e-06  exact=0.0%
+  R vs C/MKL ref                  max_abs=4.98e-07  mean_abs=1.35e-08  max_rel=4.90e-06  exact=0.0%
+  Python vs R                     max_abs=2.64e-14  mean_abs=7.64e-16  max_rel=3.23e-13  exact=0.0%
+
+  6 significant figures:
+  Python vs C/MKL ref             max_abs=0.00e+00  mean_abs=0.00e+00  max_rel=0.00e+00  exact=100.0% (6 sig figs)
+  R vs C/MKL ref                  max_abs=0.00e+00  mean_abs=0.00e+00  max_rel=0.00e+00  exact=100.0% (6 sig figs)
+  Python vs R                     max_abs=0.00e+00  mean_abs=0.00e+00  max_rel=0.00e+00  exact=100.0% (6 sig figs)
+
+==========================================================================================
+SUMMARY
+==========================================================================================
+
+  Full precision:
+   DS     Py vs Ref      R vs Ref       Py vs R
+    1      4.58e-07      4.58e-07      4.92e-14
+    2      4.99e-08      4.99e-08      7.57e-14
+    3      4.77e-07      4.77e-07      5.18e-14
+    4      3.79e-07      3.79e-07      5.83e-16
+    5      4.98e-07      4.98e-07      2.64e-14
+
+  6 significant figures:
+   DS     Py vs Ref      R vs Ref       Py vs R
+    1      0.00e+00      0.00e+00      0.00e+00
+    2      0.00e+00      0.00e+00      0.00e+00
+    3      0.00e+00      0.00e+00      0.00e+00
+    4      0.00e+00      0.00e+00      0.00e+00
+    5      0.00e+00      0.00e+00      0.00e+00
+
+Python vs R (full precision): max diff = 7.57e-14
+Python vs Ref (6 sig figs):  max diff = 0.00e+00
+PASS: All three implementations identical at 6 significant figures
