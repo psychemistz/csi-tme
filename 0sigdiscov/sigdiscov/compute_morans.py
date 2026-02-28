@@ -49,9 +49,24 @@ class Config:
     MIN_CELLS_THRESHOLD: int = 10
     MIN_CONNECTIONS_THRESHOLD: int = 10
 
-    # Precision
-    USE_FLOAT16: bool = False
+    # Precision: 'float16', 'float32', or 'float64'
+    PRECISION: str = 'float32'
     FACTOR_BATCH_SIZE: Optional[int] = None  # Auto-set
+
+    @property
+    def USE_FLOAT16(self) -> bool:
+        return self.PRECISION == 'float16'
+
+    @property
+    def _np_dtype(self):
+        return getattr(np, self.PRECISION)
+
+    def _cp_dtype(self, cp):
+        return getattr(cp, self.PRECISION)
+
+    @property
+    def _bytes_per_element(self) -> int:
+        return {'float16': 2, 'float32': 4, 'float64': 8}[self.PRECISION]
 
     # Annular parameters
     USE_ANNULAR_EDGES: bool = False
@@ -88,7 +103,7 @@ class Config:
     def calculate_optimal_batch_size(self, n_factors: int, n_cells: int,
                                      n_targets: int, available_gpu_gb: float,
                                      logger: logging.Logger) -> int:
-        bytes_per_element = 2 if self.USE_FLOAT16 else 4
+        bytes_per_element = self._bytes_per_element
         memory_per_factor = (
             n_cells * bytes_per_element +
             n_cells +
@@ -277,18 +292,19 @@ class WeightBuilder:
         n_senders = len(sender_coords_gpu)
         n_receivers = len(receiver_coords_gpu)
 
-        dtype = cp.float16 if self.config.USE_FLOAT16 else cp.float32
+        dtype = self.config._cp_dtype(cp)
 
-        mem_per_chunk = n_receivers * 4 * (2 if self.config.USE_FLOAT16 else 4)
+        mem_per_chunk = n_receivers * 4 * self.config._bytes_per_element
         available_mem = self.config.GPU_AVAILABLE_MEM
         chunk_size = min(n_senders, int(available_mem / mem_per_chunk / 4))
 
         sigma = self.config.get_sigma(radius)
-        gaussian_factor = -1.0 / (2 * sigma * sigma)
+        gaussian_factor = dtype(-1.0 / (2 * sigma * sigma))
         radius_sq = radius * radius
         inner_radius_sq = (inner_radius * inner_radius) if inner_radius else 0
 
         rows_list, cols_list, weights_list = [], [], []
+        S0_total = 0.0
 
         for chunk_start in range(0, n_senders, chunk_size):
             chunk_end = min(chunk_start + chunk_size, n_senders)
@@ -303,32 +319,37 @@ class WeightBuilder:
                 mask = mask & (dist_sq > inner_radius_sq)
 
             weights_chunk = cp.exp(dist_sq * gaussian_factor) * mask
-            nonzero_mask = weights_chunk > 1e-6
+            weights_chunk[weights_chunk <= 1e-6] = 0
 
+            # Inline row normalization: sum and divide per row before
+            # extracting sparse entries. Matches R C++ sequential approach
+            # and avoids CuSPARSE parallel reduction + D_inv @ W_sparse.
+            row_sums = weights_chunk.sum(axis=1, keepdims=True)
+            S0_chunk = float(row_sums.sum())
+            row_sums = cp.where(row_sums > 0, row_sums, dtype(1.0))
+            weights_chunk /= row_sums
+
+            nonzero_mask = weights_chunk > 0
             if cp.any(nonzero_mask):
                 rows, cols = cp.where(nonzero_mask)
                 rows_list.append(rows + chunk_start)
                 cols_list.append(cols)
-                weights_list.append(weights_chunk[nonzero_mask].astype(cp.float32))
+                weights_list.append(weights_chunk[nonzero_mask].astype(dtype))
+                S0_total += S0_chunk
 
-            del diff_x, diff_y, dist_sq, mask, weights_chunk
+            del diff_x, diff_y, dist_sq, mask, weights_chunk, row_sums
 
         if rows_list:
             all_rows = cp.concatenate(rows_list)
             all_cols = cp.concatenate(cols_list)
             all_weights = cp.concatenate(weights_list)
 
-            W_sparse = cp.sparse.coo_matrix(
+            W_normalized = cp.sparse.coo_matrix(
                 (all_weights, (all_rows, all_cols)),
-                shape=(n_senders, n_receivers), dtype=cp.float32
+                shape=(n_senders, n_receivers), dtype=dtype
             ).tocsr()
 
-            row_sums = cp.array(W_sparse.sum(axis=1)).ravel()
-            row_sums_inv = cp.where(row_sums > 0, 1.0 / row_sums, 0)
-            D_inv = cp.sparse.diags(row_sums_inv, dtype=cp.float32, format='csr')
-            W_normalized = D_inv @ W_sparse
-
-            return W_normalized, float(W_sparse.sum())
+            return W_normalized, S0_total
         else:
             return None, 0.0
 
@@ -354,7 +375,7 @@ class MoransIComputer:
 
         spatial_lags_all = W_normalized @ all_target_expr_gpu
 
-        dtype = cp.float16 if self.config.USE_FLOAT16 else cp.float32
+        dtype = self.config._cp_dtype(cp)
         morans_matrix = cp.zeros((n_factors, n_targets), dtype=dtype)
 
         batch_size = self.config.FACTOR_BATCH_SIZE or n_factors
@@ -406,7 +427,7 @@ class HDF5OutputHandler:
     def initialize(self, n_pairs: int, n_radii: int, n_factors: int, n_targets: int,
                    pairs: List[Tuple[str, str]], radii: List[float],
                    factor_names: List[str], target_names: List[str]):
-        dtype = np.float16 if self.config.USE_FLOAT16 else np.float32
+        dtype = self.config._np_dtype
 
         # Chunk layout: (1, n_radii, n_factors, target_block) — optimized for
         # downstream pair-level reads ds[pidx, :, :, :] in extract_signatures.py.
@@ -730,7 +751,7 @@ def run_matrix_mode(adata: ad.AnnData, pairs: List[Tuple[str, str]],
         cell_factor_cache[ct] = data['X_normalized_factors'][mask, :]
 
     # Quantile thresholds on GPU
-    quantile_thresholds_gpu = cp.asarray(data['quantile_thresholds'], dtype=cp.float32)
+    quantile_thresholds_gpu = cp.asarray(data['quantile_thresholds'], dtype=config._cp_dtype(cp))
 
     # Initialize output
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -752,7 +773,7 @@ def run_matrix_mode(adata: ad.AnnData, pairs: List[Tuple[str, str]],
                       data['factor_names_found'],
                       data['adata_filtered'].var_names.tolist())
 
-        dtype = np.float16 if config.USE_FLOAT16 else np.float32
+        dtype = config._np_dtype
         total_ops = n_pairs * n_radii
         with tqdm(total=total_ops, desc="Computing matrices") as pbar:
             for pair_idx, (sender, receiver) in enumerate(pairs):
@@ -761,8 +782,9 @@ def run_matrix_mode(adata: ad.AnnData, pairs: List[Tuple[str, str]],
 
                 sender_coords_gpu = cp.asarray(cell_coords_cache[sender])
                 receiver_coords_gpu = cp.asarray(cell_coords_cache[receiver])
-                sender_factors_gpu = cp.asarray(cell_factor_cache[sender], dtype=cp.float32)
-                receiver_expr_gpu = cp.asarray(cell_expr_cache[receiver], dtype=cp.float32)
+                gpu_dtype = config._cp_dtype(cp)
+                sender_factors_gpu = cp.asarray(cell_factor_cache[sender], dtype=gpu_dtype)
+                receiver_expr_gpu = cp.asarray(cell_expr_cache[receiver], dtype=gpu_dtype)
 
                 masks = sender_factors_gpu > quantile_thresholds_gpu[cp.newaxis, :]
                 masks = masks.T
@@ -1027,8 +1049,11 @@ Examples:
                         help='GPU type: auto, a100, v100, or memory in GB (default: auto)')
     parser.add_argument('--factor-batch-size', type=int, default=None,
                         help='Override auto batch size')
+    parser.add_argument('--precision', type=str, default='float32',
+                        choices=['float16', 'float32', 'float64'],
+                        help='Numerical precision (default: float32)')
     parser.add_argument('--use-float16', action='store_true',
-                        help='Use half precision (reduces memory, slight accuracy loss)')
+                        help='Shorthand for --precision float16')
 
     # Utility
     parser.add_argument('--list-cell-types', action='store_true',
@@ -1098,7 +1123,9 @@ def main():
     config.FDR_ALPHA = args.fdr_alpha
 
     if args.use_float16:
-        config.USE_FLOAT16 = True
+        config.PRECISION = 'float16'
+    else:
+        config.PRECISION = args.precision
 
     if args.factor_batch_size is not None:
         config.FACTOR_BATCH_SIZE = args.factor_batch_size

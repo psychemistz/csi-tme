@@ -252,7 +252,14 @@ def test_sigdiscovpy(ref_data, quantile_val, test_radii, ring_width, n_factors_l
                     m = m & (dsq > inner_radius_sq)
 
                 wc = np.exp(dsq * gaussian_factor) * m
-                nz = wc > 1e-6
+                wc[wc <= 1e-6] = 0
+
+                # Inline row normalization (matching compute_morans.py and R C++)
+                chunk_row_sums = wc.sum(axis=1, keepdims=True)
+                chunk_row_sums = np.where(chunk_row_sums > 0, chunk_row_sums, np.float32(1.0))
+                wc /= chunk_row_sums
+
+                nz = wc > 0
                 if nz.any():
                     ri, ci = np.where(nz)
                     w_rows.append(ri + cs)
@@ -274,13 +281,6 @@ def test_sigdiscovpy(ref_data, quantile_val, test_radii, ring_width, n_factors_l
                 (all_w, (all_r, all_c)),
                 shape=(n_senders, n_receivers), dtype=np.float32,
             )
-            # Row normalize in float32 (matching GPU)
-            row_sums = np.array(W.sum(axis=1)).ravel()
-            row_sums_inv = np.where(row_sums > 0,
-                                    np.float32(1.0) / row_sums,
-                                    np.float32(0))
-            D_inv = sp_sparse.diags(row_sums_inv.astype(np.float32), format='csr')
-            W = (D_inv @ W).astype(np.float32)
 
             # Spatial lags: W @ receiver_expr_norm → (n_senders x n_genes)
             # Need receiver_expr in (n_receivers, n_genes) format
@@ -358,6 +358,7 @@ def test_sigdiscovpy(ref_data, quantile_val, test_radii, ring_width, n_factors_l
         'max_abs_diff': max_abs_all,
         'max_rel_diff': max_rel_all,
         'mean_close_1e6_pct': mean_close,
+        'all_slices': all_results,
     }
 
 
@@ -366,7 +367,11 @@ def test_sigdiscovpy(ref_data, quantile_val, test_radii, ring_width, n_factors_l
 # ============================================================================
 
 def _export_data_for_r(tmpdir, ref_data, factor_subset, n_factors_limit):
-    """Export data from Python to HDF5 for R consumption."""
+    """Export data from Python to HDF5 for R consumption.
+
+    All numeric data is exported in float32 to match compute_morans.py GPU precision.
+    Also exports pre-normalized expression for the R low-level test.
+    """
     import anndata as ad
     from scipy import sparse as sp_sparse
 
@@ -390,18 +395,25 @@ def _export_data_for_r(tmpdir, ref_data, factor_subset, n_factors_limit):
     adata_f = adata[:, keep_genes].copy()
     gene_names = adata_f.var_names.tolist()
 
+    # Float32 matching compute_morans.py GPU precision
     if sp_sparse.issparse(adata_f.X):
-        X_dense = adata_f.X.toarray().astype(np.float64)
+        X_dense = adata_f.X.toarray().astype(np.float32)
     else:
-        X_dense = adata_f.X.astype(np.float64)
+        X_dense = adata_f.X.astype(np.float32)
 
-    coords = adata_f.obsm['spatial'].astype(np.float64)
+    coords = adata_f.obsm['spatial'].astype(np.float32)
     cell_types = adata_f.obs['cell_type'].values.astype(str)
+
+    # Normalize in float32 (matching compute_morans.py)
+    X_mean = X_dense.mean(axis=0)
+    X_std = X_dense.std(axis=0)
+    X_norm = (X_dense - X_mean) / (X_std + np.float32(1e-10))
 
     # rhdf5 reads in column-major (R) order, so transpose to get cells x genes in R
     with h5py.File(export_path, 'w') as f:
-        f.create_dataset('expr', data=X_dense.T)  # genes x cells → R reads as cells x genes
-        f.create_dataset('coords', data=coords.T)  # 2 x cells → R reads as cells x 2
+        f.create_dataset('expr', data=X_dense.T)  # raw float32
+        f.create_dataset('expr_norm', data=X_norm.T)  # normalized float32
+        f.create_dataset('coords', data=coords.T)  # float32
         f.create_dataset('cell_types', data=np.array(cell_types, dtype='S'))
         f.create_dataset('gene_names', data=np.array(gene_names, dtype='S'))
 
@@ -458,10 +470,10 @@ def test_sigdiscov_r(ref_data, quantile_val, test_radii, ring_width,
 library(sigdiscov)
 library(rhdf5)
 
-cat("Loading exported data...\\n")
+cat("Loading exported data (float32 precision)...\\n")
 t0 <- proc.time()
-expr_raw <- h5read("{data_path}", "expr")  # cells x genes
-coords <- h5read("{data_path}", "coords")  # cells x 2
+expr_raw <- h5read("{data_path}", "expr")       # cells x genes (float32 precision)
+coords <- h5read("{data_path}", "coords")        # cells x 2 (float32)
 cell_types <- as.character(h5read("{data_path}", "cell_types"))
 gene_names <- as.character(h5read("{data_path}", "gene_names"))
 H5close()
@@ -471,8 +483,9 @@ n_genes <- ncol(expr_raw)
 cat(sprintf("Loaded: %d cells, %d genes (%.1fs)\\n",
     n_cells, n_genes, (proc.time() - t0)[3]))
 
-# Normalize globally with POPULATION std (matching Python np.std with ddof=0)
-cat("Normalizing with population std...\\n")
+# Normalize in R: population std (ddof=0), matching numpy's X.mean()/X.std()
+cat("Normalizing (population std, matching numpy)...\\n")
+t_norm <- proc.time()
 expr_norm <- matrix(0, nrow = n_cells, ncol = n_genes)
 for (g in seq_len(n_genes)) {{
     x <- expr_raw[, g]
@@ -482,6 +495,7 @@ for (g in seq_len(n_genes)) {{
         expr_norm[, g] <- (x - m) / s
     }}
 }}
+cat(sprintf("Normalization: %.1fs\\n", (proc.time() - t_norm)[3]))
 
 # Factor setup
 factor_genes <- {to_r_char_vec(factor_subset)}
@@ -492,7 +506,7 @@ factor_genes <- factor_genes[valid]
 n_factors <- length(factor_idx)
 cat(sprintf("Factors found: %d\\n", n_factors))
 
-# Quantile thresholds (on RAW factor expression, ALL cells - matching Python)
+# Quantile thresholds (on RAW float32 factor expression, ALL cells)
 quantile_prob <- {quantile_val}
 quant_thresholds <- numeric(n_factors)
 for (f in seq_len(n_factors)) {{
@@ -524,9 +538,8 @@ for (pi in seq_len(n_pairs)) {{
     sender_coords <- coords[sender_idx, , drop = FALSE]
     receiver_coords <- coords[receiver_idx, , drop = FALSE]
 
-    # Factor expression for senders
+    # Float32-precision normalized expression
     sender_factor_norm <- expr_norm[sender_idx, factor_idx, drop = FALSE]
-    # Receiver expression (normalized)
     receiver_expr_norm <- expr_norm[receiver_idx, , drop = FALSE]
 
     for (ri in seq_len(n_radii)) {{
@@ -535,13 +548,14 @@ for (pi in seq_len(n_pairs)) {{
 
         t1 <- proc.time()
 
-        # Build weight matrix using sigdiscov's C++ function
+        # Build weight matrix in float32 (matching GPU precision)
         W <- create_gaussian_weights_cpp(
             sender_coords, receiver_coords,
             radius = radius,
             inner_radius = inner_radius,
             sigma = radius / 3.0,
-            min_weight = 1e-6
+            min_weight = 1e-6,
+            use_float32 = TRUE
         )
 
         if (sum(W) == 0) {{
@@ -549,33 +563,20 @@ for (pi in seq_len(n_pairs)) {{
             next
         }}
 
-        # Spatial lags: W %*% receiver_expr_norm -> (n_senders x n_genes)
-        spatial_lags <- as.matrix(W %*% receiver_expr_norm)
+        # Compute I_ND using C++ float32 path (spatial lags + cosine sim)
+        # Same function used by batch_compute_all_pairs_cpp
+        ind_matrix <- compute_ind_matrix_cpp(
+            sender_factor_norm,
+            receiver_expr_norm,
+            W,
+            quant_thresholds,
+            min_cells = 10L,
+            use_float32 = TRUE
+        )
 
-        # For each factor, compute I_ND with quantile mask
-        for (f in seq_len(n_factors)) {{
-            # Quantile mask: compare NORMALIZED sender expression to RAW threshold
-            # (matching Python's compute_morans.py behavior)
-            mask <- sender_factor_norm[, f] > quant_thresholds[f]
-            n_high <- sum(mask)
-
-            if (n_high < 10) next
-
-            high_idx <- which(mask)
-            factor_high <- sender_factor_norm[high_idx, f]
-            lags_high <- spatial_lags[high_idx, , drop = FALSE]
-
-            # I_ND = dot(factor_high/norm, lags_high) / ||lags_high_cols||
-            factor_norm_val <- sqrt(sum(factor_high^2))
-            if (factor_norm_val < 1e-10) next
-
-            factor_normalized <- factor_high / factor_norm_val
-            correlations <- as.numeric(t(factor_normalized) %*% lags_high)
-            spatial_norms <- sqrt(colSums(lags_high^2))
-
-            valid <- spatial_norms > 1e-10
-            result_array[pi, ri, f, valid] <- correlations[valid] / spatial_norms[valid]
-        }}
+        # Replace NA with 0
+        ind_matrix[is.na(ind_matrix)] <- 0
+        result_array[pi, ri, , ] <- ind_matrix
 
         elapsed <- (proc.time() - t1)[3]
         cat(sprintf("  %s R=%d (%.1fs)\\n", pair_str, as.integer(radius), elapsed))
@@ -634,6 +635,7 @@ cat("Done.\\n")
     # Compare to reference
     print("\n  Comparing R results to reference...")
     all_stats = []
+    r_slices = {}
     for pair_str in ref_pairs:
         pi_ref = ref_pairs.index(pair_str)
         pi_r = r_pairs.index(pair_str)
@@ -643,6 +645,7 @@ cat("Done.\\n")
 
             test_mat = r_matrix[pi_r, ri_r, :, :]
             ref_mat = ref_data['matrix'][pi_ref, ri_ref, factor_slice, :]
+            r_slices[(pair_str, radius)] = test_mat
 
             label = f"R-lowlevel {pair_str} R={radius}"
             stats = compare_matrices(test_mat, ref_mat, label, verbose=False)
@@ -671,6 +674,7 @@ cat("Done.\\n")
         'max_abs_diff': max_abs_all,
         'max_rel_diff': max_rel_all,
         'mean_close_1e6_pct': mean_close,
+        'all_slices': r_slices,
     }
 
 
@@ -846,6 +850,7 @@ cat("Done.\\n")
     # Compare
     print("\n  Comparing R batch results to reference...")
     all_stats = []
+    r_slices = {}
     for pair_str in ref_pairs:
         pi_ref = ref_pairs.index(pair_str)
         pi_r = r_pairs.index(pair_str)
@@ -855,6 +860,7 @@ cat("Done.\\n")
 
             test_mat = r_matrix[pi_r, ri_r, :, :]
             ref_mat = ref_data['matrix'][pi_ref, ri_ref, factor_slice, :]
+            r_slices[(pair_str, radius)] = test_mat
 
             label = f"R-batch {pair_str} R={radius}"
             stats = compare_matrices(test_mat, ref_mat, label, verbose=False)
@@ -882,6 +888,7 @@ cat("Done.\\n")
         'max_abs_diff': max_abs_all,
         'max_rel_diff': max_rel_all,
         'mean_close_1e6_pct': mean_close,
+        'all_slices': r_slices,
     }
 
 
@@ -990,12 +997,26 @@ def main():
         print(f"  {name:<28s} {r['max_abs_diff']:>12.2e} {r['max_rel_diff']:>12.2e} "
               f"{r['mean_close_1e6_pct']:>11.1f}% {verdict:>10s}")
 
-    # Note on R batch differences
-    if 'sigdiscov_r_batch' in results:
-        r_batch = results['sigdiscov_r_batch']
-        if r_batch['max_abs_diff'] < 1e-2:
-            print("\n  R batch function matches compute_morans.py algorithm.")
-            print("  Remaining differences are float64 vs float32 precision only.")
+    # Cross-comparison: R vs sigdiscovpy (bypasses old reference)
+    if 'sigdiscovpy' in results and len(results) > 1:
+        py_slices = results['sigdiscovpy']['all_slices']
+        print("\n" + "=" * 70)
+        print("CROSS-COMPARISON (R vs sigdiscovpy, same-run)")
+        print("=" * 70)
+        for name, r in results.items():
+            if name == 'sigdiscovpy':
+                continue
+            max_diff = 0
+            n_compared = 0
+            for key, r_slice in r['all_slices'].items():
+                if key in py_slices:
+                    d = np.abs(r_slice - py_slices[key])
+                    max_diff = max(max_diff, np.nanmax(d))
+                    n_compared += 1
+            verdict = "IDENTICAL" if max_diff < 1e-4 else \
+                      "CLOSE" if max_diff < 1e-2 else "DIFFERENT"
+            print(f"  {name:<28s} vs sigdiscovpy: max_abs={max_diff:.2e}  "
+                  f"({n_compared} slices)  {verdict}")
 
     return 0 if all(r['max_abs_diff'] < 1e-2 for r in results.values()) else 1
 
